@@ -2,12 +2,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Toaster } from "react-hot-toast"; // 👈 ১. টোস্টার ইম্পোর্ট করো
+import { Toaster } from "react-hot-toast"; 
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "RecipeHub - Culinary Secrets",
+  title: "RecipeHub - Recipe Sharing Platform",
   description: "Explore secret culinary methods",
 };
 
@@ -15,7 +15,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme="light">
       <body className={inter.className}>
-        {/* 👈 ২. Toaster কম্পোনেন্টটি এখানে বসিয়ে দাও যাতে যেকোনো পেজ থেকে টোস্ট ট্রিগার করা যায় */}
         <Toaster 
           position="top-center" 
           reverseOrder={false}
