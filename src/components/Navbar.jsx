@@ -1,14 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; 
-import { FaUtensils, FaBars, FaMoon, FaSun, FaUser } from "react-icons/fa6";
+import { usePathname, useRouter } from "next/navigation"; 
+
 import { MdDashboard as DashboardIcon, MdLogout as LogoutIcon } from "react-icons/md";
+import { useSession, signOut } from "@/lib/auth-client"; 
+import toast from "react-hot-toast";
+import { FaUtensils, FaBars, FaMoon, FaSun, FaUser, FaChevronDown } from "react-icons/fa6"; 
 
 const Navbar = () => {
   const [theme, setTheme] = useState("light");
   const pathname = usePathname(); 
-  const [user, setUser] = useState(null); 
+  const router = useRouter();
+  
+  const { data: session, isPending } = useSession();
+  const user = session?.user; 
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -21,6 +27,25 @@ const Navbar = () => {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Logged out successfully! See you again. ", {
+              style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+            });
+            router.push("/login"); 
+            router.refresh();
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to log out. Try again.");
+    }
   };
 
   const isActive = (path) => pathname === path;
@@ -83,8 +108,6 @@ const Navbar = () => {
                 }`}
               >
                 {link.name}
-                
-            
                 {isActive(link.path) && (
                   <span className="absolute bottom-1 left-5 right-5 h-[2.5px] bg-primary rounded-full" />
                 )}
@@ -111,17 +134,30 @@ const Navbar = () => {
         </button>
 
         {/* Live Dynamic Authentication Component */}
-        {user ? (
-          <div className="dropdown dropdown-end">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar online placeholder hover:scale-105 transition-transform">
-              <div className="bg-neutral text-neutral-content rounded-full w-9 ring ring-primary ring-offset-base-100 ring-offset-2">
-                {user.image ? (
-                  <img src={user.image} alt={user.name} />
-                ) : (
-                  <span className="text-sm font-bold">{user.name.charAt(0)}</span>
-                )}
+        {isPending ? (
+          <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        ) : user ? (
+          <div className="dropdown dropdown-end bg-base-300 rounded-2xl ">
+          
+          
+            <div 
+              tabIndex={0} 
+              role="button" 
+              className="btn btn-ghost flex items-center gap-1.5 px-2.5 py-1 hover:bg-base-200/80 rounded-xl transition-all duration-300 group"
+            >
+              <div className="avatar online placeholder">
+                <div className="bg-neutral text-neutral-content rounded-full w-9 ring ring-primary ring-offset-base-100 ring-offset-2">
+                  {user.image ? (
+                    <img src={user.image} alt={user.name} />
+                  ) : (
+                    <span className="text-sm font-bold">{user.name?.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
               </div>
+              
+              <FaChevronDown className="w-3 h-3 opacity-50 group-hover:opacity-80 transition-opacity ml-0.5 text-base-content" />
             </div>
+            
             <ul
               tabIndex={0}
               className="dropdown-content menu p-3 shadow-2xl bg-base-100 rounded-2xl w-64 mt-4 gap-1 border border-base-300/30 text-base-content"
@@ -129,7 +165,7 @@ const Navbar = () => {
               <div className="px-3 py-2 border-b border-base-200 mb-2">
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-sm truncate max-w-[140px]">{user.name}</p>
-                  {user.isPremium && (
+                  {user.role === "admin" && (
                     <span className="badge badge-warning badge-xs font-black p-1.5 shadow-sm text-[10px] text-amber-900">
                       PRO
                     </span>
@@ -153,8 +189,8 @@ const Navbar = () => {
               <div className="border-t border-base-200 my-1"></div>
               <li>
                 <button 
-                  onClick={() => setUser(null)}
-                  className="py-2.5 rounded-xl hover:bg-error/10 hover:text-error text-error font-medium transition-all flex items-center gap-2"
+                  onClick={handleLogout}
+                  className="py-2.5 rounded-xl hover:bg-error/10 hover:text-error text-error font-medium transition-all flex items-center gap-2 w-full text-left"
                 >
                   <LogoutIcon className="w-4 h-4" />
                   <span>Logout</span>

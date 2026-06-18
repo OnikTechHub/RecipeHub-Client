@@ -179,7 +179,7 @@ const RegisterPage = () => {
                   type="email"
                   required
                   disabled={loading}
-                  placeholder="c"
+                  placeholder="Enter Your Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={inputClass}
