@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { FaClock, FaStar, FaUtensils, FaHeart, FaThumbsUp, FaFlag, FaCreditCard } from "react-icons/fa6";
+import { FaClock, FaStar, FaUtensils, FaHeart, FaThumbsUp, FaFlag, FaCreditCard, FaLayerGroup, FaGlobe } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 
-// Stripe ইনিশিয়েট করা (তোমার এনভায়রনমেন্ট ভ্যারিয়েবল থেকে পাবলিক কি নিবে)
+// Stripe Promise
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || "");
 
 const RecipeDetailsPage = ({ params }) => {
@@ -17,7 +17,7 @@ const RecipeDetailsPage = ({ params }) => {
     const [reportReason, setReportReason] = useState("");
     const [submittingReport, setSubmittingReport] = useState(false);
 
-    // ১. সম্পূর্ণ রেসিপি ডেটা লোড করা (লাইক কাউন্টসহ)
+    // Fetch recipe details from DB
     const fetchRecipeDetails = async () => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes/${id}`);
@@ -37,7 +37,7 @@ const RecipeDetailsPage = ({ params }) => {
         if (id) fetchRecipeDetails();
     }, [id]);
 
-    // ২. Stripe Payment - Purchase Button Click Functionality
+    // Stripe Payment Integration
     const handlePurchase = async () => {
         try {
             toast.loading("Redirecting to Stripe Checkout...");
@@ -47,9 +47,9 @@ const RecipeDetailsPage = ({ params }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     recipeId: recipe._id,
-                    title: recipe.title,
+                    title: recipe.recipeName, 
                     image: recipe.image,
-                    price: recipe.price || 500 // যদি প্রাইজ না থাকে ডিফল্ট ৫০০ টাকা বা ৫ ডলার ধবে
+                    price: recipe.price || 500 
                 })
             });
 
@@ -69,7 +69,7 @@ const RecipeDetailsPage = ({ params }) => {
         }
     };
 
-    // ৩. Like Button - Increase Like Count & Update DB Instantly
+    // Like Button Integration
     const handleLike = async () => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes/${id}/like`, {
@@ -79,9 +79,8 @@ const RecipeDetailsPage = ({ params }) => {
             const data = await res.json();
 
             if (data.success) {
-                // লাইভ স্টেট আপডেট করা যেন সাথে সাথে পেজে লাইক বেড়ে যায়
                 setRecipe(prev => ({ ...prev, likeCount: (prev.likeCount || 0) + 1 }));
-                toast.success("Recipe Liked! 👍");
+                toast.success("Recipe Liked! ");
             }
         } catch (error) {
             console.error("Like error:", error);
@@ -89,7 +88,7 @@ const RecipeDetailsPage = ({ params }) => {
         }
     };
 
-    // ৪. Favorite Button - Add to Favorite API
+    // Favorite Button Integration
     const handleAddToFavorite = async () => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/favorites`, {
@@ -100,7 +99,7 @@ const RecipeDetailsPage = ({ params }) => {
             const data = await res.json();
 
             if (data.success) {
-                toast.success("Added to your Favorite Recipes! ❤️");
+                toast.success("Added to your Favorite Recipes! ");
             } else {
                 toast.error(data.message || "Already in favorites!");
             }
@@ -110,7 +109,7 @@ const RecipeDetailsPage = ({ params }) => {
         }
     };
 
-    // ৫. Report Button - Submit Modal Data to Backend
+    // Report Button Integration
     const handleReportSubmit = async (e) => {
         e.preventDefault();
         if (!reportReason.trim()) return toast.error("Please enter a reason!");
@@ -125,7 +124,7 @@ const RecipeDetailsPage = ({ params }) => {
             const data = await res.json();
 
             if (data.success) {
-                toast.success("Recipe reported successfully. Team will review it. ⚠️");
+                toast.success("Recipe reported successfully. Team will review it. ");
                 setIsReportModalOpen(false);
                 setReportReason("");
             }
@@ -162,56 +161,68 @@ const RecipeDetailsPage = ({ params }) => {
                 {/* Main Content Card */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-base-200/40 p-6 md:p-8 rounded-3xl border border-base-300/30">
 
-                    {/* Image */}
+                    {/* Recipe Image */}
                     <div className="md:col-span-5 h-64 md:h-80 rounded-2xl overflow-hidden shadow-md">
-                        <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
+                        <img src={recipe.image} alt={recipe.recipeName} className="w-full h-full object-cover" />
                     </div>
 
                     {/* Info Details */}
                     <div className="md:col-span-7 space-y-5">
-                        <span className="text-xs font-black uppercase tracking-wider bg-primary/10 text-primary px-3 py-1.5 rounded-full">
-                            {recipe.category}
-                        </span>
-                        <h1 className="text-2xl md:text-4xl font-black tracking-tight">{recipe.title}</h1>
+                        <div className="flex gap-2">
+                            <span className="text-xs font-black uppercase tracking-wider bg-primary/10 text-primary px-3 py-1.5 rounded-full">
+                                {recipe.category}
+                            </span>
+                            {recipe.cuisineType && (
+                                <span className="text-xs font-black uppercase tracking-wider bg-secondary/10 text-secondary px-3 py-1.5 rounded-full flex items-center gap-1">
+                                    <FaGlobe /> {recipe.cuisineType}
+                                </span>
+                            )}
+                        </div>
+                        
+                        {/* Recipe Name updated */}
+                        <h1 className="text-2xl md:text-4xl font-black tracking-tight">{recipe.recipeName}</h1>
 
-                        {/* Meta & Like Count Badge */}
+                        {/* Meta Info Badges */}
                         <div className="flex flex-wrap gap-4 pt-1">
+                            {/* Preparation Time */}
                             <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold">
                                 <FaClock className="text-primary" />
-                                <span>Cooking Time: {recipe.cookingTime}</span>
+                                <span>Prep Time: {recipe.preparationTime || "N/A"}</span>
                             </div>
+                            {/* Difficulty Level */}
+                            <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold text-secondary">
+                                <FaLayerGroup />
+                                <span>Difficulty: {recipe.difficultyLevel || "Easy"}</span>
+                            </div>
+                            {/* Rating (Fallback default to 5.0 if not in object) */}
                             <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold text-amber-500">
                                 <FaStar />
-                                <span>Rating: {recipe.ratings}</span>
+                                <span>Rating: {recipe.ratings || 5.0}</span>
                             </div>
-                            {/* 🌟 Like Count Requirement */}
+                            {/* Likes Counter */}
                             <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold text-primary">
                                 <FaThumbsUp />
                                 <span>Likes: {recipe.likeCount || 0}</span>
                             </div>
                         </div>
 
-                        {/* 🌟 All Required Action Buttons */}
+                        {/* Action Buttons */}
                         <div className="flex flex-wrap gap-3 pt-3">
-                            {/* ১. Purchase Button (Stripe Payment) */}
                             <button onClick={handlePurchase} className="btn btn-primary rounded-xl font-bold text-white normal-case flex items-center gap-2">
                                 <FaCreditCard />
                                 <span>Purchase Recipe</span>
                             </button>
 
-                            {/* ২. Like Button */}
                             <button onClick={handleLike} className="btn btn-outline btn-primary rounded-xl font-bold normal-case flex items-center gap-2">
                                 <FaThumbsUp />
                                 <span>Like</span>
                             </button>
 
-                            {/* ৩. Favorite Button */}
                             <button onClick={handleAddToFavorite} className="btn btn-outline btn-secondary rounded-xl font-bold normal-case flex items-center gap-2">
                                 <FaHeart />
                                 <span>Favorite</span>
                             </button>
 
-                            {/* ৪. Report Button */}
                             <button onClick={() => setIsReportModalOpen(true)} className="btn btn-outline btn-error rounded-xl font-bold normal-case flex items-center gap-2">
                                 <FaFlag />
                                 <span>Report</span>
@@ -221,8 +232,9 @@ const RecipeDetailsPage = ({ params }) => {
                     </div>
                 </div>
 
-                {/* Ingredients & Guidelines Section */}
+                {/* Ingredients & Instructions Section */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                    {/* Ingredients Column */}
                     <div className="md:col-span-5 bg-base-200/30 p-6 rounded-2xl border border-base-300/40 h-fit">
                         <h3 className="text-lg font-black tracking-tight flex items-center gap-2 mb-4">
                             <FaUtensils className="text-primary text-sm" />
@@ -238,17 +250,20 @@ const RecipeDetailsPage = ({ params }) => {
                         </ul>
                     </div>
 
+                    {/* Instructions Column (updated from recipe.description to recipe.instructions) */}
                     <div className="md:col-span-7 space-y-4">
-                        <h3 className="text-lg font-black tracking-tight">Cooking Guidelines & Description</h3>
-                        <p className="text-sm font-medium opacity-70 leading-relaxed text-justify">{recipe.description}</p>
+                        <h3 className="text-lg font-black tracking-tight">Cooking Instructions</h3>
+                        <p className="text-sm font-medium opacity-70 leading-relaxed text-justify whitespace-pre-line">
+                            {recipe.instructions || "No instructions provided."}
+                        </p>
                     </div>
                 </div>
 
             </div>
 
-            {/* 🌟 Report Form Modal */}
+            {/* Report Form Modal */}
             {isReportModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className="bg-base-100 border border-base-300 w-full max-w-md p-6 rounded-2xl shadow-2xl relative text-base-content">
                         <h3 className="text-xl font-black mb-2 flex items-center gap-2 text-error">
                             <FaFlag /> Report Recipe
@@ -259,7 +274,7 @@ const RecipeDetailsPage = ({ params }) => {
                             <textarea
                                 required
                                 className="textarea textarea-bordered w-full h-28 text-sm focus:outline-none"
-                                placeholder="Write down the reason for reporting (e.g., Inappropriate language, wrong image, fake instructions)..."
+                                placeholder="Write down the reason for reporting..."
                                 value={reportReason}
                                 onChange={(e) => setReportReason(e.target.value)}
                             ></textarea>
