@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaMagnifyingGlass, FaSliders, FaClock, FaStar } from "react-icons/fa6";
+import Link from "next/link";
 
 const BrowseRecipesPage = () => {
     const [recipes, setRecipes] = useState([]);
@@ -39,7 +40,7 @@ const BrowseRecipesPage = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 bg-base-200/40 p-6 rounded-3xl border border-base-300/30">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-black tracking-tight">Discover Recipes</h1>
-                        
+
                     </div>
 
                     {/* Search Input */}
@@ -73,8 +74,8 @@ const BrowseRecipesPage = () => {
                                         key={category}
                                         onClick={() => setSelectedCategory(category)}
                                         className={`px-4 py-2.5 rounded-xl font-bold text-xs text-left transition-all ${selectedCategory === category
-                                                ? "bg-primary text-white shadow-md shadow-primary/20"
-                                                : "bg-base-100 hover:bg-base-300/70 border border-base-300/30"
+                                            ? "bg-primary text-white shadow-md shadow-primary/20"
+                                            : "bg-base-100 hover:bg-base-300/70 border border-base-300/30"
                                             }`}
                                     >
                                         {category}
@@ -114,9 +115,12 @@ const BrowseRecipesPage = () => {
                                                     {recipe.title}
                                                 </h3>
                                             </div>
-                                            <button className="btn btn-primary btn-sm w-full rounded-xl font-bold text-white normal-case">
+                                            <Link
+                                                href={`/browse-recipes/${recipe._id}`}
+                                                className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case"
+                                            >
                                                 View Details
-                                            </button>
+                                            </Link>
                                         </div>
                                     </div>
                                 ))}
