@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast"; 
 
 import AdminOverview from "@/components/AdminOverview";
 import UserOverview from "@/components/UserOverview";
@@ -23,6 +24,29 @@ export default function DashboardOverview() {
                 const email = session.user.email;
                 const roleRes = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/check-user-role?email=${email}`);
                 const roleData = await roleRes.json();
+
+                // Block User
+                if (roleData.success && roleData.isBlocked) {
+                    await authClient.signOut(); 
+
+                    
+                    toast.error("Your account has been blocked by the administrator.", {
+                        duration: 4000, 
+                        position: "top-center",
+                        style: {
+                            background: "#333",
+                            color: "#fff",
+                            fontWeight: "bold"
+                        }
+                    });
+
+                    
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+
+                    return;
+                }
 
                 let currentRole = "user";
                 if (roleData.success && roleData.data) {
@@ -66,7 +90,6 @@ export default function DashboardOverview() {
         );
     }
 
-    
     if (userRole === "admin") {
         return <AdminOverview stats={stats} currentUser={session?.user} />;
     }
