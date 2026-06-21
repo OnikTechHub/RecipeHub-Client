@@ -4,7 +4,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { FaClock, FaStar, FaUtensils, FaHeart, FaThumbsUp, FaFlag, FaCreditCard, FaLayerGroup, FaGlobe } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 
-// Stripe Promise
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || "");
 
 const RecipeDetailsPage = ({ params }) => {
@@ -16,6 +16,8 @@ const RecipeDetailsPage = ({ params }) => {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [submittingReport, setSubmittingReport] = useState(false);
+
+    const currentUserEmail = recipe?.authorEmail || "testuser@gmail.com";
 
     // Fetch recipe details from DB
     const fetchRecipeDetails = async () => {
@@ -39,31 +41,34 @@ const RecipeDetailsPage = ({ params }) => {
 
     // Stripe Payment Integration
     const handlePurchase = async () => {
-        try {
-            toast.loading("Redirecting to Stripe Checkout...");
+        if (!recipe) return toast.error("Recipe data not loaded yet!");
 
+        const toastId = toast.loading("Redirecting to Stripe Checkout...");
+
+        try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/create-checkout-session`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     recipeId: recipe._id,
-                    title: recipe.recipeName, 
-                    image: recipe.image,
-                    price: recipe.price || 500 
+                    title: recipe.recipeName,
+                    image: recipe.recipeImage || recipe.image,
+                    price: recipe.price ? Number(recipe.price) : 5,
+                    userEmail: currentUserEmail
                 })
             });
 
             const session = await res.json();
-            const stripe = await stripePromise;
 
-            if (stripe && session.id) {
-                await stripe.redirectToCheckout({ sessionId: session.id });
+            if (session.success && session.url) {
+                toast.dismiss(toastId);
+                window.location.href = session.url;
             } else {
-                toast.dismiss();
-                toast.error("Stripe session creation failed!");
+                toast.dismiss(toastId);
+                toast.error(session.message || "Stripe session creation failed!");
             }
         } catch (error) {
-            toast.dismiss();
+            toast.dismiss(toastId);
             console.error("Purchase error:", error);
             toast.error("Payment integration error!");
         }
@@ -79,7 +84,7 @@ const RecipeDetailsPage = ({ params }) => {
             const data = await res.json();
 
             if (data.success) {
-                setRecipe(prev => ({ ...prev, likeCount: (prev.likeCount || 0) + 1 }));
+                setRecipe(prev => ({ ...prev, likesCount: (prev.likesCount || 0) + 1 }));
                 toast.success("Recipe Liked! ");
             }
         } catch (error) {
@@ -94,12 +99,12 @@ const RecipeDetailsPage = ({ params }) => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/favorites`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ recipeId: recipe._id })
+                body: JSON.stringify({ recipeId: recipe._id, userEmail: currentUserEmail })
             });
             const data = await res.json();
 
             if (data.success) {
-                toast.success("Added to your Favorite Recipes! ");
+                toast.success("Added to your Favorite Recipes! ❤️");
             } else {
                 toast.error(data.message || "Already in favorites!");
             }
@@ -119,7 +124,11 @@ const RecipeDetailsPage = ({ params }) => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/reports`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ recipeId: recipe._id, reason: reportReason })
+                body: JSON.stringify({
+                    recipeId: recipe._id,
+                    reporterEmail: currentUserEmail,
+                    reason: reportReason
+                })
             });
             const data = await res.json();
 
@@ -163,7 +172,7 @@ const RecipeDetailsPage = ({ params }) => {
 
                     {/* Recipe Image */}
                     <div className="md:col-span-5 h-64 md:h-80 rounded-2xl overflow-hidden shadow-md">
-                        <img src={recipe.image} alt={recipe.recipeName} className="w-full h-full object-cover" />
+                        <img src={recipe.recipeImage || recipe.image} alt={recipe.recipeName} className="w-full h-full object-cover" />
                     </div>
 
                     {/* Info Details */}
@@ -178,8 +187,8 @@ const RecipeDetailsPage = ({ params }) => {
                                 </span>
                             )}
                         </div>
-                        
-                        {/* Recipe Name updated */}
+
+                        {/* Recipe Name */}
                         <h1 className="text-2xl md:text-4xl font-black tracking-tight">{recipe.recipeName}</h1>
 
                         {/* Meta Info Badges */}
@@ -194,7 +203,7 @@ const RecipeDetailsPage = ({ params }) => {
                                 <FaLayerGroup />
                                 <span>Difficulty: {recipe.difficultyLevel || "Easy"}</span>
                             </div>
-                            {/* Rating (Fallback default to 5.0 if not in object) */}
+                            {/* Rating */}
                             <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold text-amber-500">
                                 <FaStar />
                                 <span>Rating: {recipe.ratings || 5.0}</span>
@@ -202,7 +211,7 @@ const RecipeDetailsPage = ({ params }) => {
                             {/* Likes Counter */}
                             <div className="flex items-center gap-2 bg-base-100 px-4 py-2 rounded-xl border border-base-300/40 text-xs font-bold text-primary">
                                 <FaThumbsUp />
-                                <span>Likes: {recipe.likeCount || 0}</span>
+                                <span>Likes: {recipe.likesCount || recipe.likeCount || 0}</span>
                             </div>
                         </div>
 
@@ -210,7 +219,7 @@ const RecipeDetailsPage = ({ params }) => {
                         <div className="flex flex-wrap gap-3 pt-3">
                             <button onClick={handlePurchase} className="btn btn-primary rounded-xl font-bold text-white normal-case flex items-center gap-2">
                                 <FaCreditCard />
-                                <span>Purchase Recipe</span>
+                                <span>Purchase Recipe (${recipe.price || 5})</span>
                             </button>
 
                             <button onClick={handleLike} className="btn btn-outline btn-primary rounded-xl font-bold normal-case flex items-center gap-2">
@@ -250,7 +259,7 @@ const RecipeDetailsPage = ({ params }) => {
                         </ul>
                     </div>
 
-                    {/* Instructions Column (updated from recipe.description to recipe.instructions) */}
+                    {/* Instructions Column */}
                     <div className="md:col-span-7 space-y-4">
                         <h3 className="text-lg font-black tracking-tight">Cooking Instructions</h3>
                         <p className="text-sm font-medium opacity-70 leading-relaxed text-justify whitespace-pre-line">

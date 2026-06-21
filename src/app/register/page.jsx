@@ -6,7 +6,7 @@ import { FaUser, FaEnvelope, FaLock, FaImage, FaEye, FaEyeSlash, FaArrowRight, F
 import { FcGoogle } from "react-icons/fc";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { authClient } from "@/lib/auth-client"; // Better Auth
+import { authClient } from "@/lib/auth-client"; 
 
 const RegisterPage = () => {
     const router = useRouter();

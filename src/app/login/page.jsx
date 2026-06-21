@@ -6,7 +6,7 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaUtensils, FaSun,
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { authClient } from "@/lib/auth-client"; // Better Auth ক্লায়েন্ট
+import { authClient } from "@/lib/auth-client";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -16,7 +16,6 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [theme, setTheme] = useState("light");
 
-    // 🌞 থিম কন্ট্রোল ও সিঙ্ক (Figma Style)
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
         setTheme(savedTheme);
@@ -36,7 +35,6 @@ const LoginPage = () => {
         try {
             setLoading(true);
 
-            // Better Auth সাইন-ইন কল
             const { data, error } = await authClient.signIn.email({
                 email: email,
                 password: password,
@@ -55,7 +53,7 @@ const LoginPage = () => {
                 setEmail("");
                 setPassword("");
 
-                // সফল লগইনের পর ড্যাশবোর্ড বা হোম পেজে রিডাইরেক্ট
+
                 setTimeout(() => {
                     router.push("/dashboard");
                 }, 1200);
@@ -82,7 +80,6 @@ const LoginPage = () => {
         }
     };
 
-    // রিইউজেবল স্টাইলিং ক্লাসেস
     const inputGroupClass = `flex items-center gap-3 px-4 h-12 bg-base-100 rounded-xl border border-base-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all shadow-sm`;
     const inputClass = `w-full bg-transparent text-sm text-base-content placeholder:text-base-content/40 outline-none`;
 
@@ -194,7 +191,7 @@ const LoginPage = () => {
                         <div className="flex-1 border-t border-base-300"></div>
                     </div>
 
-                    {/* 🌐 Google Social Button */}
+                    {/*  Google Social Button */}
                     <button
                         onClick={handleGoogleSignIn}
                         className="w-full h-12 flex items-center justify-center gap-3 border border-base-300 hover:border-base-content/10 rounded-xl text-sm font-semibold text-base-content hover:bg-base-200 transition-all duration-300 shadow-sm active:scale-[0.99] normal-case bg-base-100"

@@ -5,11 +5,13 @@ import PopularRecipes from "@/components/PopularRecipes";
 
 export default function Home() {
   return (
-    <main>
-      <Hero />
-      <PopularRecipes />
-      <Features />
-      <NewsletterStats />
-    </main>
+    <div>
+      <main>
+        <Hero />
+        <PopularRecipes />
+        <Features />
+        <NewsletterStats />
+      </main>
+    </div>
   );
 }

@@ -13,13 +13,10 @@ const AddRecipePage = () => {
     instructions: "",
   });
 
-  
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  
   const uploadImageToImgbb = async (file) => {
-   
     
     const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "YOUR_IMGBB_API_KEY_HERE";
 
@@ -39,10 +36,9 @@ const AddRecipePage = () => {
       const data = await res.json();
 
       if (data.success) {
-        return data.data.url; /
-        
+        return data.data.url;
       } else {
-        
+
         console.error("Imgbb Server Response Error:", data.error);
         throw new Error(data.error?.message || "Imgbb image upload failed");
       }
@@ -55,7 +51,7 @@ const AddRecipePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    
+
     if (!imageFile) {
       toast.error("Please select a recipe image!");
       return;
@@ -65,7 +61,7 @@ const AddRecipePage = () => {
     setUploading(true);
 
     try {
-      
+
       const imageUrl = await uploadImageToImgbb(imageFile);
 
       const recipeData = {
@@ -107,7 +103,7 @@ const AddRecipePage = () => {
           instructions: "",
         });
         setImageFile(null);
-        e.target.reset(); 
+        e.target.reset();
       } else {
         toast.error(data.message || "Failed to add recipe.", { id: loadingToast });
       }
@@ -121,7 +117,7 @@ const AddRecipePage = () => {
 
   return (
     <div className="min-h-screen bg-base-100 p-6 max-w-2xl mx-auto text-base-content">
-     
+
       <Toaster position="top-center" reverseOrder={false} />
 
       <h2 className="text-2xl font-black mb-6">Add a New Recipe to Collection</h2>
