@@ -1,3 +1,4 @@
+import FeaturedRecipes from "@/components/FeaturedRecipes";
 import Features from "@/components/Features";
 import Hero from "@/components/Hero";
 import NewsletterStats from "@/components/NewsletterStats";
@@ -9,6 +10,7 @@ export default function Home() {
       <main>
         <Hero />
         <PopularRecipes />
+        <FeaturedRecipes />
         <Features />
         <NewsletterStats />
       </main>
