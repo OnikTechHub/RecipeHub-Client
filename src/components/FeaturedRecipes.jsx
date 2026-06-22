@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { FaUtensils, FaClock, FaGlobe, FaTags } from "react-icons/fa";
 import toast from "react-hot-toast";
-
+import Link from "next/link";
 const FeaturedRecipes = () => {
     const [featuredRecipes, setFeaturedRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ const FeaturedRecipes = () => {
                 setLoading(true);
                 const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`);
                 const data = await res.json();
-                
+
                 if (data.success) {
                     const featured = data.data.filter(recipe => recipe.isFeatured === true);
                     setFeaturedRecipes(featured);
@@ -38,7 +38,6 @@ const FeaturedRecipes = () => {
     }
 
     return (
-        
         <section className="py-12 bg-base-100 text-base-content transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -61,19 +60,21 @@ const FeaturedRecipes = () => {
                         <p className="opacity-50 font-bold text-sm">No featured recipes available at the moment.</p>
                     </div>
                 ) : (
-                    // Recipe Grid 
+                    /* Recipe Grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {featuredRecipes.map((recipe) => (
-                            <div 
-                                key={recipe._id} 
-                                className="group bg-base-200/60 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 flex flex-col backdrop-blur-sm"
+
+                            <Link
+                                href={`/browse-recipes/${recipe._id}`}
+                                key={recipe._id}
+                                className="group bg-base-200/60 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 flex flex-col backdrop-blur-sm cursor-pointer"
                             >
                                 {/* Recipe Image Container */}
                                 <div className="relative aspect-video w-full bg-base-300 overflow-hidden">
                                     {recipe.image ? (
-                                        <img 
-                                            src={recipe.image} 
-                                            alt={recipe.recipeName} 
+                                        <img
+                                            src={recipe.image}
+                                            alt={recipe.recipeName}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
                                     ) : (
@@ -119,7 +120,7 @@ const FeaturedRecipes = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}
