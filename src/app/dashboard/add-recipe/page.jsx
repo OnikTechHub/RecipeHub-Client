@@ -1,249 +1,209 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import RecipeForm from "@/components/RecipeForm"; 
 
 const AddRecipePage = () => {
-  const [formData, setFormData] = useState({
-    recipeName: "",
-    category: "Breakfast",
-    cuisineType: "",
-    difficultyLevel: "Easy",
-    preparationTime: "",
-    ingredients: "",
-    instructions: "",
-  });
+    const { data: session, isPending } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+    const router = useRouter();
 
-  const [imageFile, setImageFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+    const [formData, setFormData] = useState({
+        recipeName: "",
+        category: "Breakfast",
+        cuisineType: "",
+        difficultyLevel: "Easy",
+        preparationTime: "",
+        ingredients: "",
+        instructions: "",
+    });
 
-  const uploadImageToImgbb = async (file) => {
-    
-    const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "YOUR_IMGBB_API_KEY_HERE";
+    const [imageFile, setImageFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
-    if (!IMGBB_API_KEY || IMGBB_API_KEY === "YOUR_IMGBB_API_KEY_HERE") {
-      throw new Error("Imgbb API Key is missing! Please configure it in your environment variables.");
+    const [userRecipesCount, setUserRecipesCount] = useState(0);
+    const [isPremium, setIsPremium] = useState(false);
+
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+    useEffect(() => {
+        const fetchUserStats = async () => {
+            if (!currentUserEmail) return;
+            try {
+                const userRes = await fetch(`${SERVER_URL}/users/${currentUserEmail}`);
+                const userData = await userRes.json();
+                if (userData.success) {
+                    setIsPremium(userData.data?.isPremium || false);
+                }
+
+                const recipesRes = await fetch(`${SERVER_URL}/recipes-count?email=${currentUserEmail}`);
+                const recipesData = await recipesRes.json();
+                if (recipesData.success) {
+                    setUserRecipesCount(recipesData.count || 0);
+                }
+            } catch (error) {
+                console.error("Error fetching usage statistics:", error);
+            }
+        };
+
+        fetchUserStats();
+    }, [currentUserEmail, SERVER_URL]);
+
+    // Imgbb image upload logic
+    const uploadImageToImgbb = async (file) => {
+        const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+        if (!IMGBB_API_KEY) {
+            throw new Error("Imgbb API Key is missing! Please configure it in your env variables.");
+        }
+
+        const formDataBody = new FormData();
+        formDataBody.append("image", file);
+
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formDataBody,
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                return data.data.url;
+            } else {
+                console.error("Imgbb Server Error:", data.error);
+                throw new Error(data.error?.message || "Imgbb image upload failed");
+            }
+        } catch (error) {
+            console.error("Network error during upload:", error);
+            throw error;
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!currentUserEmail) {
+            toast.error("Please login to publish a recipe!");
+            return;
+        }
+
+        
+        if (!isPremium && userRecipesCount >= 2) {
+            toast.error("Standard accounts have a 2-recipe limit! Redirecting to buy Premium...", {
+                duration: 4000,
+                style: {
+                    background: "#EF4444",
+                    color: "#fff",
+                    fontWeight: "700"
+                }
+            });
+
+            setTimeout(() => {
+                router.push("/dashboard"); 
+            }, 2000);
+
+            return;
+        }
+
+        if (!imageFile) {
+            toast.error("Please select a recipe image!");
+            return;
+        }
+
+        const loadingToast = toast.loading("Uploading image and publishing recipe...");
+        setUploading(true);
+
+        try {
+            const imageUrl = await uploadImageToImgbb(imageFile);
+
+            const recipeData = {
+                recipeName: formData.recipeName,
+                image: imageUrl,
+                category: formData.category,
+                cuisineType: formData.cuisineType,
+                difficultyLevel: formData.difficultyLevel,
+                preparationTime: formData.preparationTime,
+                ingredients: formData.ingredients.split(",").map((item) => item.trim()),
+                instructions: formData.instructions,
+                authorName: session?.user?.name || "Anonymous",
+                authorEmail: currentUserEmail,
+                likesCount: 0,
+                isFeatured: false,
+            };
+
+            const res = await fetch(`${SERVER_URL}/recipes`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(recipeData),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                toast.success("Recipe Published Successfully!", {
+                    id: loadingToast,
+                    duration: 3000,
+                });
+
+                setUserRecipesCount((prev) => prev + 1);
+
+                setFormData({
+                    recipeName: "",
+                    category: "Breakfast",
+                    cuisineType: "",
+                    difficultyLevel: "Easy",
+                    preparationTime: "",
+                    ingredients: "",
+                    instructions: "",
+                });
+                setImageFile(null);
+                e.target.reset();
+
+                setTimeout(() => {
+                    router.push("/dashboard/my-recipes");
+                }, 1500);
+
+            } else {
+                toast.error(data.message || "Failed to add recipe.", { id: loadingToast });
+            }
+        } catch (error) {
+            console.error("Error adding recipe:", error);
+            toast.error(error.message || "Something went wrong!", { id: loadingToast });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    if (isPending) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-base-100">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
-    const formDataBody = new FormData();
-    formDataBody.append("image", file);
+    return (
+        <div className="min-h-screen bg-base-100 p-6 max-w-2xl mx-auto text-base-content">
+            <Toaster position="top-center" reverseOrder={false} />
 
-    try {
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: formDataBody,
-      });
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-black">Add a New Recipe</h2>
 
-      const data = await res.json();
+                <span className={`badge ${isPremium ? "badge-warning" : "badge-neutral"} p-3 font-bold`}>
+                    {isPremium ? "Pro Unlimited" : `Slot Used: ${userRecipesCount}/2`}
+                </span>
+            </div>
 
-      if (data.success) {
-        return data.data.url;
-      } else {
-
-        console.error("Imgbb Server Response Error:", data.error);
-        throw new Error(data.error?.message || "Imgbb image upload failed");
-      }
-    } catch (error) {
-      console.error("Network or implementation error during upload:", error);
-      throw error;
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-
-    if (!imageFile) {
-      toast.error("Please select a recipe image!");
-      return;
-    }
-
-    const loadingToast = toast.loading("Uploading image and publishing recipe...");
-    setUploading(true);
-
-    try {
-
-      const imageUrl = await uploadImageToImgbb(imageFile);
-
-      const recipeData = {
-        recipeName: formData.recipeName,
-        image: imageUrl,
-        category: formData.category,
-        cuisineType: formData.cuisineType,
-        difficultyLevel: formData.difficultyLevel,
-        preparationTime: formData.preparationTime,
-        ingredients: formData.ingredients.split(",").map((item) => item.trim()),
-        instructions: formData.instructions,
-      };
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recipeData),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success("Recipe Published Successfully!", {
-          id: loadingToast,
-          duration: 4000,
-          style: {
-            background: "#1F2937",
-            color: "#fff",
-            fontWeight: "600",
-            borderRadius: "12px",
-          },
-        });
-
-        setFormData({
-          recipeName: "",
-          category: "Breakfast",
-          cuisineType: "",
-          difficultyLevel: "Easy",
-          preparationTime: "",
-          ingredients: "",
-          instructions: "",
-        });
-        setImageFile(null);
-        e.target.reset();
-      } else {
-        toast.error(data.message || "Failed to add recipe.", { id: loadingToast });
-      }
-    } catch (error) {
-      console.error("Error adding recipe:", error);
-      toast.error(error.message || "Something went wrong!", { id: loadingToast });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-base-100 p-6 max-w-2xl mx-auto text-base-content">
-
-      <Toaster position="top-center" reverseOrder={false} />
-
-      <h2 className="text-2xl font-black mb-6">Add a New Recipe to Collection</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4 bg-base-200/40 p-6 rounded-2xl border border-base-300/40">
-
-        {/* Recipe Name */}
-        <div>
-          <label className="label font-bold text-xs">Recipe Name</label>
-          <input
-            type="text"
-            required
-            placeholder="e.g., Grilled Chicken"
-            className="input input-bordered w-full"
-            value={formData.recipeName}
-            onChange={(e) => setFormData({ ...formData, recipeName: e.target.value })}
-          />
-        </div>
-
-        {/* Recipe Image Upload */}
-        <div>
-          <label className="label font-bold text-xs">Recipe Image Upload</label>
-          <input
-            type="file"
-            accept="image/*"
-            required
-            className="file-input file-input-bordered file-input-primary w-full"
-            onChange={(e) => setImageFile(e.target.files[0])}
-          />
-        </div>
-
-        {/* Category & Cuisine Type */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label font-bold text-xs">Category</label>
-            <select
-              className="select select-bordered w-full"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            >
-              <option>Breakfast</option>
-              <option>Lunch</option>
-              <option>Dinner</option>
-              <option>Desserts</option>
-            </select>
-          </div>
-          <div>
-            <label className="label font-bold text-xs">Cuisine Type</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g., Italian, Mexican"
-              className="input input-bordered w-full"
-              value={formData.cuisineType}
-              onChange={(e) => setFormData({ ...formData, cuisineType: e.target.value })}
+            <RecipeForm 
+              formData={formData}
+              setFormData={setFormData}
+              setImageFile={setImageFile}
+              handleSubmit={handleSubmit}
+              uploading={uploading}
             />
-          </div>
         </div>
-
-        {/* Difficulty Level & Preparation Time */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label font-bold text-xs">Difficulty Level</label>
-            <select
-              className="select select-bordered w-full"
-              value={formData.difficultyLevel}
-              onChange={(e) => setFormData({ ...formData, difficultyLevel: e.target.value })}
-            >
-              <option>Easy</option>
-              <option>Medium</option>
-              <option>Hard</option>
-            </select>
-          </div>
-          <div>
-            <label className="label font-bold text-xs">Preparation Time</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g., 25 mins"
-              className="input input-bordered w-full"
-              value={formData.preparationTime}
-              onChange={(e) => setFormData({ ...formData, preparationTime: e.target.value })}
-            />
-          </div>
-        </div>
-
-        {/* Ingredients */}
-        <div>
-          <label className="label font-bold text-xs">Ingredients (Separate with commas)</label>
-          <input
-            type="text"
-            required
-            placeholder="Chicken, Garlic, Olive Oil, Pepper"
-            className="input input-bordered w-full"
-            value={formData.ingredients}
-            onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
-          />
-        </div>
-
-        {/* Instructions */}
-        <div>
-          <label className="label font-bold text-xs">Instructions</label>
-          <textarea
-            required
-            placeholder="Step 1. Marinate the chicken... Step 2. Grill for 15 mins..."
-            className="textarea textarea-bordered w-full h-28"
-            value={formData.instructions}
-            onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-          ></textarea>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={uploading}
-          className="btn btn-primary w-full rounded-xl text-white font-bold normal-case"
-        >
-          {uploading ? (
-            <span className="loading loading-spinner loading-sm"></span>
-          ) : (
-            "Publish Recipe Live"
-          )}
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default AddRecipePage;
