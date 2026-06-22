@@ -65,8 +65,7 @@ const FeaturedRecipes = () => {
                         {featuredRecipes.map((recipe) => (
 
                             <Link
-                                href={`/browse-recipes
-                                    /${recipe._id}`}
+                                href={`/browse-recipes/${recipe._id}`}
                                 key={recipe._id}
                                 className="group bg-base-200/60 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 flex flex-col backdrop-blur-sm cursor-pointer"
                             >
