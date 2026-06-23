@@ -15,14 +15,14 @@ const MyPurchasedRecipesPage = () => {
     const router = useRouter();
     const sessionId = searchParams.get("session_id");
 
-    
+
     const { data: session, isPending } = authClient.useSession();
     const currentUserEmail = session?.user?.email;
     const currentUserId = session?.user?.id || session?.user?._id;
 
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL 
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
 
-    
+
     const verifyStripePayment = async () => {
         if (!sessionId || !currentUserId) return;
 
@@ -57,9 +57,9 @@ const MyPurchasedRecipesPage = () => {
                     </div>
                 ), { duration: 5000 });
 
-                
+
                 router.replace("/dashboard/purchased-recipes");
-                
+
                 fetchPurchasedRecipes();
             } else {
                 toast.error(data.message || "Payment verification failed.");
@@ -74,7 +74,7 @@ const MyPurchasedRecipesPage = () => {
         }
     };
 
-    
+
     const fetchPurchasedRecipes = async () => {
         if (!currentUserEmail) return;
 
@@ -95,14 +95,14 @@ const MyPurchasedRecipesPage = () => {
         }
     };
 
-    
+
     useEffect(() => {
         if (currentUserEmail) {
             if (sessionId) {
-                
+
                 verifyStripePayment();
             } else {
-                
+
                 fetchPurchasedRecipes();
             }
         } else if (!isPending && !currentUserEmail) {
@@ -110,7 +110,7 @@ const MyPurchasedRecipesPage = () => {
         }
     }, [currentUserEmail, isPending, sessionId]);
 
-    
+
     if (isPending || loading || verifying) {
         return (
             <div className="w-full h-[70vh] flex flex-col items-center justify-center bg-transparent gap-3">
@@ -120,7 +120,7 @@ const MyPurchasedRecipesPage = () => {
         );
     }
 
-    
+
     if (!currentUserEmail) {
         return (
             <div className="w-full h-[60vh] flex flex-col items-center justify-center text-base-content p-4">
@@ -234,7 +234,7 @@ const MyPurchasedRecipesPage = () => {
                                         <td className="py-4 pr-6 text-right">
                                             {item.recipeId !== "membership_upgrade" ? (
                                                 <Link
-                                                    href={`/recipes/${item.recipeId}`}
+                                                    href={`/dashboard/purchased-recipes/${item.recipeId}`}
                                                     className="btn btn-primary btn-xs font-bold rounded-xl normal-case gap-1 hover:scale-105 transition-transform"
                                                 >
                                                     <span>View Details</span>
