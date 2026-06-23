@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaBookmark, FaClock, FaArrowRight, FaCrown, FaUtensils, FaBan, FaCircleCheck } from "react-icons/fa6";
+import { FaBookmark, FaClock, FaArrowRight, FaCrown, FaUtensils, FaBan } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -15,13 +15,11 @@ const MyPurchasedRecipesPage = () => {
     const router = useRouter();
     const sessionId = searchParams.get("session_id");
 
-
     const { data: session, isPending } = authClient.useSession();
     const currentUserEmail = session?.user?.email;
     const currentUserId = session?.user?.id || session?.user?._id;
 
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
-
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const verifyStripePayment = async () => {
         if (!sessionId || !currentUserId) return;
@@ -41,25 +39,27 @@ const MyPurchasedRecipesPage = () => {
             const data = await res.json();
 
             if (data.success) {
-                toast.custom((t) => (
-                    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-base-100 shadow-lg rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 border border-success/30`}>
-                        <div className="flex-1 w-0">
-                            <div className="flex items-start">
-                                <div className="flex-shrink-0 pt-0.5 text-success text-xl">
-                                    <FaCircleCheck />
-                                </div>
-                                <div className="ml-3 flex-1">
-                                    <p className="text-sm font-black text-base-content">Payment Successful!</p>
-                                    <p className="mt-1 text-xs text-base-content/60">Your transaction has been securely saved to RecipeHub.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ), { duration: 5000 });
+                toast.dismiss();
 
+                toast.success("Payment Successful!", {
+                    duration: 1000,
+                    position: "top-center",
+                    style: {
+                        background: "#1e1b4b", 
+                        color: "#ffffff",
+                        fontWeight: "800",
+                        fontSize: "14px",
+                        padding: "12px 24px",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(16, 185, 129, 0.3)", 
+                    },
+                    iconTheme: {
+                        primary: "#10b981",
+                        secondary: "#ffffff",
+                    },
+                });
 
                 router.replace("/dashboard/purchased-recipes");
-
                 fetchPurchasedRecipes();
             } else {
                 toast.error(data.message || "Payment verification failed.");
@@ -73,7 +73,6 @@ const MyPurchasedRecipesPage = () => {
             setVerifying(false);
         }
     };
-
 
     const fetchPurchasedRecipes = async () => {
         if (!currentUserEmail) return;
@@ -95,21 +94,17 @@ const MyPurchasedRecipesPage = () => {
         }
     };
 
-
     useEffect(() => {
         if (currentUserEmail) {
             if (sessionId) {
-
                 verifyStripePayment();
             } else {
-
                 fetchPurchasedRecipes();
             }
         } else if (!isPending && !currentUserEmail) {
             setLoading(false);
         }
     }, [currentUserEmail, isPending, sessionId]);
-
 
     if (isPending || loading || verifying) {
         return (
@@ -119,7 +114,6 @@ const MyPurchasedRecipesPage = () => {
             </div>
         );
     }
-
 
     if (!currentUserEmail) {
         return (
@@ -138,7 +132,8 @@ const MyPurchasedRecipesPage = () => {
 
     return (
         <div className="w-full text-base-content space-y-6 p-1 md:p-4">
-            <Toaster position="top-center" />
+            
+            <Toaster position="top-center" toastOptions={{ duration: 1000 }} limit={1} />
 
             {/* Header */}
             <div className="flex flex-col gap-1">
@@ -177,7 +172,6 @@ const MyPurchasedRecipesPage = () => {
                             <tbody className="text-xs font-semibold">
                                 {purchasedItems.map((item) => (
                                     <tr key={item._id} className="hover:bg-base-200/20 transition-colors border-b border-base-200/50">
-
                                         <td className="py-4 pl-6">
                                             {item.recipeId === "membership_upgrade" ? (
                                                 <div className="flex items-center gap-3">
