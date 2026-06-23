@@ -12,6 +12,7 @@
     "@better-auth/mongo-adapter": "^1.6.19",
     "@stripe/react-stripe-js": "^6.6.0",
     "@stripe/stripe-js": "^9.8.0",
+    "axios": "^1.18.1",
     "better-auth": "^1.6.19",
     "daisyui": "^5.5.23",
     "framer-motion": "^12.40.0",
