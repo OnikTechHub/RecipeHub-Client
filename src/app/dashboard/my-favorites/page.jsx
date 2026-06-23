@@ -34,7 +34,7 @@ const MyFavorites = () => {
             .then(() => {
                 setFavorites(favorites.filter(fav => fav._id !== id));
                 toast.success("Removed from favorites!", {
-                    position: "top-center", 
+                    position: "top-center",
                 });
             })
             .catch(err => {
@@ -45,7 +45,7 @@ const MyFavorites = () => {
 
     return (
         <div className="p-6">
-            <Toaster /> 
+            <Toaster />
 
             <h2 className="text-2xl font-bold mb-6">My Favorites</h2>
 
