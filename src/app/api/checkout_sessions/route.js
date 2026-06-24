@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { stripe } from "../../../lib/stripe";
+import { stripe } from "@/lib/stripe";
 
 export async function POST(req) {
   try {
@@ -16,7 +16,10 @@ export async function POST(req) {
 
     if (!origin) {
       return NextResponse.json(
-        { error: "Internal Server Error: Application URL configuration missing." },
+        {
+          error:
+            "Internal Server Error: Application URL configuration missing.",
+        },
         { status: 500 },
       );
     }
@@ -38,7 +41,7 @@ export async function POST(req) {
         },
       ],
       mode: "payment",
-      
+
       success_url: `${origin}/dashboard/purchased-recipes?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/browse-recipes/${recipeId}`,
     });
