@@ -11,7 +11,7 @@ const FeaturedRecipes = () => {
         const fetchFeatured = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/featured-recipes`);
                 const data = await res.json();
 
                 if (data.success) {
