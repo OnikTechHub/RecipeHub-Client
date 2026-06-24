@@ -72,7 +72,7 @@ export default function Hero() {
                 </motion.p>
 
                 {/* Search Bar */}
-                <motion.form
+                {/* <motion.form
                     variants={fadeInUp}
                     onSubmit={handleSearch}
                     className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-black/40 backdrop-blur-xl rounded-2xl sm:rounded-full border border-white/10 shadow-2xl mb-10 focus-within:border-primary/50 transition-all duration-300"
@@ -93,7 +93,7 @@ export default function Hero() {
                     >
                         Search
                     </button>
-                </motion.form>
+                </motion.form> */}
 
                 {/* Action Buttons */}
                 <motion.div variants={fadeInUp} className="flex flex-wrap items-center justify-center gap-4 w-full">

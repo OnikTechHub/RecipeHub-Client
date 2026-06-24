@@ -14,9 +14,7 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-
   const { data: session, isPending } = authClient.useSession();
-
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -47,7 +45,6 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-base-100 flex flex-col md:flex-row text-base-content">
-
       <div className="md:hidden bg-base-200 p-4 flex justify-between items-center border-b border-base-300">
         <span className="font-black tracking-wider text-xl text-primary">RecipeHub</span>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="btn btn-ghost btn-sm text-lg">
@@ -55,11 +52,8 @@ export default function DashboardLayout({ children }) {
         </button>
       </div>
 
-      {/* side navigation  */}
       <aside className={`${isSidebarOpen ? "block" : "hidden"} md:block w-full md:w-64 bg-base-200 border-r border-r-base-300/60 p-5 flex flex-col justify-between transition-all duration-300 shrink-0`}>
         <div className="space-y-6">
-
-          {/* logo */}
           <div className="hidden md:block pb-2 border-b border-base-300/60">
             <Link href="/" className="font-black text-2xl tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               RecipeHub
@@ -79,7 +73,9 @@ export default function DashboardLayout({ children }) {
                 {currentUser?.name}
                 {isPremium && <span className="badge badge-warning badge-xs text-[9px] font-black">PRO</span>}
               </h4>
-              <p className="text-[10px] opacity-60 truncate uppercase font-semibold">{currentUser?.role || "User"} Account</p>
+              <p className="text-[10px] opacity-60 truncate uppercase font-semibold">
+                {isAdmin ? "Admin Account" : "User Account"}
+              </p>
             </div>
           </div>
 
@@ -88,7 +84,6 @@ export default function DashboardLayout({ children }) {
               <FaHome className="text-lg" /> Back to Home
             </Link>
 
-            {/* USER DASHBOARD MENU */}
             {!isAdmin && (
               <>
                 <p className="text-[11px] font-bold opacity-40 uppercase px-3 pt-2 tracking-wider">User Dashboard</p>
@@ -113,7 +108,6 @@ export default function DashboardLayout({ children }) {
               </>
             )}
 
-            {/* ADMIN DASHBOARD MENU  */}
             {isAdmin && (
               <>
                 <p className="text-[11px] font-bold opacity-40 uppercase px-3 pt-2 tracking-wider">Admin Dashboard</p>
@@ -134,11 +128,9 @@ export default function DashboardLayout({ children }) {
                 </Link>
               </>
             )}
-
           </nav>
         </div>
 
-        {/* Log Out*/}
         <div className="pt-4 border-t border-base-300/60">
           <button onClick={handleLogout} className="btn btn-ghost btn-sm w-full rounded-xl text-error normal-case justify-start gap-3 font-semibold">
             <FaSignOutAlt /> Log Out
@@ -146,13 +138,11 @@ export default function DashboardLayout({ children }) {
         </div>
       </aside>
 
-      {/* main contain area */}
       <main className="flex-1 bg-base-100 p-6 md:p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {children}
         </div>
       </main>
-
     </div>
   );
 }
