@@ -45,7 +45,7 @@ const LoginPage = () => {
                     style: { borderRadius: "12px", background: "#262626", color: "#fff" },
                 });
             } else {
-                toast.success("Welcome Back! Login Successful. 🎉", {
+                toast.success("Welcome Back! Login Successful.", {
                     duration: 3000,
                     style: { borderRadius: "12px", background: "#F97316", color: "#fff", fontWeight: "600" },
                 });
