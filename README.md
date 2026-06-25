@@ -26,6 +26,8 @@ RecipeHub is a full-stack recipe-sharing platform where food enthusiasts can cre
 * **Styling:** Tailwind CSS, DaisyUI, HeroUI
 * **State Management:** React Hooks, TanStack Query
 * **Animations:** Framer Motion
+* **Notifications:** React Hot Toast
+* **Animations:** Framer Motion
 * **Authentication:** Better Auth (Google & Credentials)
 * **Payments:** Stripe Checkout
 
