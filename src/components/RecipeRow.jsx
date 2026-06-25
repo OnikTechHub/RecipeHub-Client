@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import { useRouter } from "next/navigation"; 
-import { FaClock, FaEye } from "react-icons/fa6"; 
+import { useRouter } from "next/navigation";
+import { FaClock, FaEye } from "react-icons/fa6";
 import { MdEdit } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 
 const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
-  const router = useRouter(); 
+  const router = useRouter();
   const { _id, recipeName, image, category, cuisineType, preparationTime } = recipe;
 
   return (
@@ -53,7 +53,7 @@ const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
         <div className="flex items-center gap-1">
           {/* View Button */}
           <button
-            onClick={() => router.push(`/recipe/${_id}`)}
+            onClick={() => router.push(`/browse-recipes/${_id}`)}
             className="btn btn-sm btn-square btn-ghost text-primary hover:bg-primary/10 rounded-lg transition-all"
             title="View Recipe"
           >
