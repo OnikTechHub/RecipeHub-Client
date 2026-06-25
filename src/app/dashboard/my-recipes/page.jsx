@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import RecipeRow from "@/components/RecipeRow";
 import { RiDeleteBin6Fill } from "react-icons/ri";
+import { FaEye } from "react-icons/fa6";
 
 const MyRecipesPage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -397,6 +398,14 @@ const MyRecipesPage = () => {
 
                             {/* Modal Actions */}
                             <div className="modal-action pt-2 gap-2">
+
+                                <button
+                                    onClick={() => router.push(`/recipe/${recipe._id}`)}
+                                    className="btn btn-sm btn-ghost"
+                                    title="View Recipe"
+                                >
+                                    <FaEye className="w-4 h-4" />
+                                </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}

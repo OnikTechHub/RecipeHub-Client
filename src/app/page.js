@@ -9,8 +9,8 @@ export default function Home() {
     <div>
       <main>
         <Hero />
-        <PopularRecipes />
         <FeaturedRecipes />
+        <PopularRecipes />
         <Features />
         <NewsletterStats />
       </main>

@@ -1,11 +1,12 @@
-
 "use client";
 import React from "react";
-import { FaClock } from "react-icons/fa6";
+import { useRouter } from "next/navigation"; 
+import { FaClock, FaEye } from "react-icons/fa6"; 
 import { MdEdit } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 
 const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
+  const router = useRouter(); 
   const { _id, recipeName, image, category, cuisineType, preparationTime } = recipe;
 
   return (
@@ -19,11 +20,7 @@ const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
           <div className="avatar">
             <div className="mask mask-squircle h-12 w-12 bg-base-300 relative">
               {image ? (
-                <img
-                  src={image}
-                  alt={recipeName}
-                  className="object-cover w-full h-full"
-                />
+                <img src={image} alt={recipeName} className="object-cover w-full h-full" />
               ) : (
                 <div className="w-full h-full bg-neutral text-neutral-content flex items-center justify-center font-bold text-xs">
                   No Img
@@ -43,19 +40,27 @@ const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
         <span className="badge badge-neutral font-bold">{category}</span>
       </td>
 
-      {/* Prep Time Column */}
-      <td className="font-medium text-base-content/80 vertical-middle">
+      {/* Prep Time */}
+      <td className="font-medium text-base-content/80">
         <div className="flex items-center gap-2">
           <FaClock className="text-base-content/60 w-4 h-4" />
           <span>{preparationTime}</span>
         </div>
       </td>
 
-      {/* Actions (Solid Icons used here) */}
+      {/* Actions */}
       <td>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* View Button */}
+          <button
+            onClick={() => router.push(`/recipe/${_id}`)}
+            className="btn btn-sm btn-square btn-ghost text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title="View Recipe"
+          >
+            <FaEye className="w-5 h-5" />
+          </button>
+
           {/* Edit Button */}
-          
           <button
             onClick={() => onEditClick(recipe)}
             className="btn btn-sm btn-square btn-ghost text-info hover:bg-info/10 rounded-lg transition-all"
@@ -64,14 +69,13 @@ const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
             <MdEdit className="w-5 h-5" />
           </button>
 
-          {/* Delete Button (Solid Trash Icon) */}
+          {/* Delete Button */}
           <button
             onClick={() => onDelete(_id)}
             className="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10 rounded-lg transition-all"
             title="Delete Recipe"
           >
             <RiDeleteBin6Fill className="w-5 h-5" />
-              
           </button>
         </div>
       </td>
