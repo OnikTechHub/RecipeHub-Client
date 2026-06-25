@@ -1,36 +1,227 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🍲 RecipeHub - A Recipe Sharing Platform
 
-## Getting Started
+RecipeHub is a full-stack recipe-sharing platform where food enthusiasts can create, share, discover, and manage recipes. The platform provides a seamless community-driven experience along with premium features for advanced users.
 
-First, run the development server:
+---
+
+## 🚀 Live Demo
+
+🔗 **Live Site:** https://recipe-hub-client-two.vercel.app
+
+🔗 **Client Repository:** https://github.com/OnikTechHub/RecipeHub-Client
+
+
+🔗 **Server Repository:** https://github.com/OnikTechHub/RecipeHub-Server
+
+---
+
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* **Framework:** Next.js (App Router)
+* **Styling:** Tailwind CSS, DaisyUI, HeroUI
+* **State Management:** React Hooks, TanStack Query
+* **Animations:** Framer Motion
+* **Authentication:** Better Auth (Google & Credentials)
+* **Payments:** Stripe Checkout
+
+### Backend
+
+* **Runtime:** Node.js
+* **Framework:** Express.js
+* **Authentication:** JWT with HTTP-Only Cookies
+
+### Database & Services
+
+* **Database:** MongoDB
+* **Image Hosting:** ImgBB API
+* **Deployment:** Vercel (Frontend), (Backend)
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Security
+
+* JWT-based Authentication
+* HTTP-Only Cookie Protection
+* Google Sign-In
+* Email & Password Authentication
+* Protected Routes
+
+### 🍽️ Recipe Management
+
+* Create Recipes
+* View Recipe Details
+* Update Recipes
+* Delete Recipes
+* Rich Recipe Information
+
+### ⭐ Community Features
+
+* Like Recipes
+* Add Recipes to Favorites
+* Report Inappropriate Recipes
+* View Popular Recipes
+
+### 💎 Premium Membership
+
+* Stripe Payment Integration
+* Unlock Unlimited Recipe Publishing
+* Premium Badge for Subscribers
+
+### 🛡️ Admin Dashboard
+
+* Manage Users
+* Manage Recipes
+* Handle Reported Content
+* Role-Based Access Control (RBAC)
+
+### 🔍 Search & Filtering
+
+* Search Recipes by Title
+* Filter by Categories
+* MongoDB Aggregation Pipeline
+* Server-Side Pagination
+
+### 🎨 User Experience
+
+* Responsive Design
+* Dark / Light Theme Toggle
+* Smooth Framer Motion Animations
+* Fast Page Loading with Next.js
+
+---
+
+## 💻 Installation & Setup
+
+### Clone the Repository
+
+```bash
+git clone <https://github.com/OnikTechHub/RecipeHub-Client>
+```
+
+### Navigate to Project Directory
+
+```bash
+cd recipehub
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build for Production
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Start Production Server
 
-## Learn More
+```bash
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<!-- ## 👨‍💻 Admin Credentials
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+Email: your-admin-email@example.com
+Password: your-admin-password
+```
 
-## Deploy on Vercel
+--- -->
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 Challenge Requirements Implemented
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+✅ Dark / Light Theme Toggle
+
+✅ JWT Authentication with HTTP-Only Cookies
+
+✅ Better Auth Integration
+
+✅ Google Authentication
+
+✅ Server-Side Pagination
+
+✅ Stripe Payment Integration
+
+✅ Framer Motion Animations
+
+✅ Role-Based Access Control
+
+✅ CRUD Operations
+
+✅ Search & Filtering
+
+✅ Responsive Design
+
+---
+
+## 🔮 Future Improvements
+
+* Recipe Comments System
+* Recipe Rating & Reviews
+* Social Sharing Features
+* User Following System
+* AI-Powered Recipe Recommendations
+* PWA Support
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a new branch
+
+```bash
+git checkout -b feature-name
+```
+
+3. Commit your changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push to your branch
+
+```bash
+git push origin feature-name
+```
+
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍🍳 Developed By
+
+**Your Name**
+
+📧 [onikdas.dev@gmail.com](mailto:your-email@example.com)
+
+🌐 Portfolio:https://onikdas-dev.vercel.app
+
+⭐ If you like this project, don't forget to give it a star on GitHub!
