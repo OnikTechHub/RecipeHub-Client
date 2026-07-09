@@ -130,6 +130,10 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=your_better_auth_secret
 
+# MongoDB
+MONGO_DB_URI=your_mongodb_connection_string
+AUTH_DB_NAME=your_database_name
+
 # Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
@@ -156,8 +160,6 @@ AUTH_DB_NAME=your_database_name
 BETTER_AUTH_URL=http://localhost:5000
 BETTER_AUTH_SECRET=your_better_auth_secret
 
-# Stripe
-STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
 
 > ⚠️ **Security Note:** Never commit your actual `.env` or `.env.local` files to GitHub. Store all sensitive credentials securely and only commit `.env.example` files.
