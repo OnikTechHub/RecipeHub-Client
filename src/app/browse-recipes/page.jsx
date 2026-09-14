@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaMagnifyingGlass, FaSliders, FaClock, FaStar, FaCrown } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaSliders, FaClock, FaStar, FaCrown, FaLockOpen, FaCartPlus } from "react-icons/fa6";
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { useCart } from "@/context/CartContext";
 
 const BrowseRecipesPage = () => {
+    const { isPurchased, addToCart } = useCart();
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -106,39 +108,67 @@ const BrowseRecipesPage = () => {
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {recipes.map((recipe) => (
-                                        <div key={recipe._id} className="bg-base-100 rounded-2xl border border-base-300/40 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 group flex flex-col">
-                                            <div className="relative h-48 overflow-hidden bg-base-200">
-                                                <img src={recipe.image || recipe.recipeImage} alt={recipe.recipeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-base-100/90 backdrop-blur-md text-primary shadow-sm">
-                                                    {Array.isArray(recipe.category) ? recipe.category[0] : recipe.category || "General"}
-                                                </span>
+                                    {recipes.map((recipe) => {
+                                        const isPaid = recipe.recipeType === "Paid" || recipe.isPaid === true || Number(recipe.price || 0) > 0;
+                                        const owned = isPurchased(recipe._id, recipe.authorEmail);
+                                        const price = Number(recipe.price || 5).toFixed(2);
 
-                                                {/* Free vs Premium Badge */}
-                                                {recipe.isPaid && Number(recipe.price || 0) > 0 ? (
-                                                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500 text-white shadow-md flex items-center gap-1 tracking-wider">
-                                                        <FaCrown className="text-[9px]" /> ${Number(recipe.price).toFixed(2)}
+                                        return (
+                                            <div key={recipe._id} className="bg-base-100 rounded-2xl border border-base-300/40 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 group flex flex-col">
+                                                <div className="relative h-48 overflow-hidden bg-base-200">
+                                                    <img src={recipe.image || recipe.recipeImage} alt={recipe.recipeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-base-100/90 backdrop-blur-md text-primary shadow-sm">
+                                                        {Array.isArray(recipe.category) ? recipe.category[0] : recipe.category || "General"}
                                                     </span>
-                                                ) : (
-                                                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md tracking-wider">
-                                                        Free
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="p-5 flex flex-col flex-grow justify-between">
-                                                <div>
-                                                    <div className="flex items-center gap-3 text-xs opacity-60 mb-2 font-medium">
-                                                        <span className="flex items-center gap-1"><FaClock className="text-[10px]" /> {recipe.preparationTime || recipe.prepTime || "N/A"}</span>
-                                                        <span className="flex items-center gap-1 text-amber-500"><FaStar className="text-[10px]" /> {recipe.ratings || 5.0}</span>
-                                                    </div>
-                                                    <h3 className="font-bold text-base text-base-content tracking-tight line-clamp-2 mb-4 group-hover:text-primary transition-colors">{recipe.recipeName}</h3>
+
+                                                    {/* Free vs Premium vs Unlocked Badge */}
+                                                    {owned && isPaid ? (
+                                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-600 text-white shadow-md flex items-center gap-1 tracking-wider">
+                                                            <FaLockOpen className="text-[9px]" /> Unlocked
+                                                        </span>
+                                                    ) : isPaid ? (
+                                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500 text-white shadow-md flex items-center gap-1 tracking-wider">
+                                                            <FaCrown className="text-[9px]" /> ${price}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md tracking-wider">
+                                                            Free
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case shadow-sm hover:shadow-md">
-                                                    {recipe.isPaid && Number(recipe.price || 0) > 0 ? "Unlock Premium" : "View Recipe"}
-                                                </Link>
+
+                                                <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-3 text-xs opacity-60 mb-2 font-medium">
+                                                            <span className="flex items-center gap-1"><FaClock className="text-[10px]" /> {recipe.preparationTime || recipe.prepTime || "N/A"}</span>
+                                                            <span className="flex items-center gap-1 text-amber-500"><FaStar className="text-[10px]" /> {recipe.ratings || 5.0}</span>
+                                                        </div>
+                                                        <h3 className="font-bold text-base text-base-content tracking-tight line-clamp-2 group-hover:text-primary transition-colors">{recipe.recipeName}</h3>
+                                                    </div>
+
+                                                    {/* Action Buttons */}
+                                                    {owned || !isPaid ? (
+                                                        <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case shadow-sm hover:shadow-md gap-2">
+                                                            <span>View Recipe</span>
+                                                        </Link>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md flex-1 rounded-2xl font-bold text-white normal-case shadow-sm hover:shadow-md">
+                                                                Unlock Premium
+                                                            </Link>
+                                                            <button
+                                                                onClick={() => addToCart(recipe)}
+                                                                className="btn btn-outline btn-primary btn-md rounded-2xl font-bold px-3"
+                                                                title="Add to Cart"
+                                                            >
+                                                                <FaCartPlus className="text-base" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
 
                                 {/* Universal Pagination Component */}

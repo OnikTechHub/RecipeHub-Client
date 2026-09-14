@@ -12,6 +12,7 @@ import {
   FaCrown,
   FaLockOpen,
   FaLock,
+  FaCartPlus,
 } from "react-icons/fa6";
 
 const RecipeInfoCard = ({
@@ -20,6 +21,7 @@ const RecipeInfoCard = ({
   accessReason = "free",
   isLiked = false,
   onPurchase,
+  onAddToCart,
   onLike,
   onFavorite,
   onOpenReport,
@@ -119,13 +121,25 @@ const RecipeInfoCard = ({
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 pt-3">
           {isPaid && !hasAccess ? (
-            <button
-              onClick={onPurchase}
-              className="btn btn-primary rounded-xl font-bold text-white normal-case flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-102 transition-transform"
-            >
-              <FaCreditCard className="text-sm" />
-              <span>Unlock Secret Recipe (${Number(recipe.price || 5).toFixed(2)})</span>
-            </button>
+            <>
+              <button
+                onClick={onPurchase}
+                className="btn btn-primary rounded-xl font-bold text-white normal-case flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-102 transition-transform"
+              >
+                <FaCreditCard className="text-sm" />
+                <span>Unlock Secret Recipe (${Number(recipe.price || 5).toFixed(2)})</span>
+              </button>
+
+              {onAddToCart && (
+                <button
+                  onClick={onAddToCart}
+                  className="btn btn-outline btn-primary rounded-xl font-bold normal-case flex items-center gap-2 hover:scale-102 transition-transform"
+                >
+                  <FaCartPlus className="text-sm" />
+                  <span>Add to Cart</span>
+                </button>
+              )}
+            </>
           ) : (
             <a
               href="#recipe-content"

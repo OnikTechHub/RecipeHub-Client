@@ -15,10 +15,12 @@ import RecipeInfoCard from "@/components/RecipeInfoCard";
 import ReportModal from "@/components/ReportModal";
 import { authClient } from "@/lib/auth-client";
 import { HashLoader } from "react-spinners";
+import { useCart } from "@/context/CartContext";
 
 const RecipeDetailsPage = ({ params }) => {
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
+  const { addToCart } = useCart();
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -256,6 +258,7 @@ const RecipeDetailsPage = ({ params }) => {
           accessReason={accessReason}
           isLiked={isLiked}
           onPurchase={handlePurchase}
+          onAddToCart={() => addToCart(recipe)}
           onLike={handleLike}
           onFavorite={handleAddToFavorite}
           onOpenReport={handleOpenReportModal}
