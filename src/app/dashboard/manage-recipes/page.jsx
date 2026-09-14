@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaTrashAlt, FaUtensils, FaUser, FaTags, FaEdit, FaCheckCircle, FaStar } from "react-icons/fa";
+import { FaTrash, FaUtensils, FaUser, FaTags, FaPenToSquare, FaCheckCircle, FaStar, FaMagnifyingGlass } from "react-icons/fa6";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import EditRecipeModal from "@/components/EditRecipeModal"; 
@@ -11,6 +11,7 @@ export default function ManageRecipes() {
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeEditRecipe, setActiveEditRecipe] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +52,17 @@ export default function ManageRecipes() {
     useEffect(() => {
         loadRecipes();
     }, [currentPage]);
+
+    // Filter recipes by searchQuery
+    const filteredRecipes = recipes.filter((r) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        const name = (r.recipeName || "").toLowerCase();
+        const cuisine = (r.cuisine || r.cuisineType || "").toLowerCase();
+        const category = (Array.isArray(r.category) ? r.category.join(" ") : r.category || "").toLowerCase();
+        const author = (r.authorName || r.authorEmail || "").toLowerCase();
+        return name.includes(query) || cuisine.includes(query) || category.includes(query) || author.includes(query);
+    });
 
     // Delete Recipe fun
     const handleDeleteRecipe = async (id, title) => {
@@ -98,20 +110,16 @@ export default function ManageRecipes() {
         }
     };
 
-    
     const handleUpdateSubmit = async (updatedData) => {
         try {
-            
             const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes/${activeEditRecipe._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedData), 
-                
             });
             const data = await res.json();
 
             if (data.success) {
-                
                 setRecipes(recipes.map(recipe =>
                     recipe._id === activeEditRecipe._id
                         ? { ...recipe, ...updatedData } 
@@ -125,6 +133,7 @@ export default function ManageRecipes() {
             toast.error("Failed to sync recipe data.", toastStyle);
         }
     };
+
     if (loading) {
         return (
             <div className="min-h-[50vh] flex flex-col justify-center items-center gap-4">
@@ -136,9 +145,24 @@ export default function ManageRecipes() {
 
     return (
         <div className="space-y-6">
-            <div className="border-b border-base-300 pb-4">
-                <h1 className="text-2xl font-black text-base-content tracking-tight">Manage Recipes</h1>
-                <p className="text-xs opacity-60 font-medium mt-1">Review, modularize, and customize featured lists for main page rendering.</p>
+            {/* Header & Search */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-base-300 pb-4">
+                <div>
+                    <h1 className="text-2xl font-black text-base-content tracking-tight">Manage Recipes</h1>
+                    <p className="text-xs opacity-60 font-medium mt-1">Review, modularize, and customize featured lists for main page rendering.</p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative w-full md:w-72">
+                    <FaMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40 text-xs" />
+                    <input
+                        type="text"
+                        placeholder="Search recipe, cuisine, author..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="input input-sm input-bordered w-full pl-9 rounded-xl text-xs font-medium focus:outline-none focus:border-primary bg-base-100"
+                    />
+                </div>
             </div>
 
             <div className="overflow-x-auto bg-base-200/40 border border-base-300 rounded-2xl shadow-sm">
@@ -153,12 +177,14 @@ export default function ManageRecipes() {
                         </tr>
                     </thead>
                     <tbody>
-                        {recipes.length === 0 ? (
+                        {filteredRecipes.length === 0 ? (
                             <tr>
-                                <td colSpan="5" className="text-center py-10 font-bold opacity-40 text-sm">No community ledger assets detected.</td>
+                                <td colSpan="5" className="text-center py-10 font-bold text-base-content/50 text-sm">
+                                    {searchQuery ? `No recipes match "${searchQuery}"` : "No community recipes found."}
+                                </td>
                             </tr>
                         ) : (
-                            recipes.map((recipe) => (
+                            filteredRecipes.map((recipe) => (
                                 <tr key={recipe._id} className="border-b border-base-300/60 font-medium text-sm">
                                     <td>
                                         <div className="flex items-center gap-3">
@@ -212,13 +238,13 @@ export default function ManageRecipes() {
                                                 onClick={() => setActiveEditRecipe(recipe)}
                                                 className="btn btn-neutral bg-base-300 text-base-content border-none btn-xs gap-1 font-bold rounded-lg px-2.5 py-1.5 h-auto min-h-0 hover:bg-base-300/70"
                                             >
-                                                <FaEdit /> Edit
+                                                <FaPenToSquare /> Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteRecipe(recipe._id, recipe.recipeName)}
                                                 className="btn btn-error btn-outline btn-xs gap-1 font-bold rounded-lg px-2.5 py-1.5 h-auto min-h-0 hover:text-white"
                                             >
-                                                <FaTrashAlt /> Delete
+                                                <FaTrash /> Delete
                                             </button>
                                         </div>
                                     </td>

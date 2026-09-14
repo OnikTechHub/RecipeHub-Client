@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FaMoneyBillWave, FaHandHoldingDollar, FaBuildingColumns, FaReceipt } from "react-icons/fa6";
+import { FaMoneyBillWave, FaHandHoldingDollar, FaBuildingColumns, FaReceipt, FaEye, FaXmark, FaCheckCircle, FaUser, FaCrown, FaUtensils } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
 
@@ -11,6 +11,7 @@ const TransactionsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalTransactions, setTotalTransactions] = useState(0);
+    const [selectedTx, setSelectedTx] = useState(null);
     const limit = 10;
 
     // Financial totals
@@ -122,17 +123,17 @@ const TransactionsPage = () => {
             {/* Transactions Table */}
             <div className="bg-base-100 rounded-2xl border border-base-300/60 overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
-                    <table className="table table-zebra w-full text-xs">
+                    <table className="table table-zebra w-full text-xs text-base-content">
                         <thead className="bg-base-200/70 text-base-content/70 font-black uppercase text-[10px] tracking-wider border-b border-base-300">
                             <tr>
-                                <th className="py-3.5 pl-5">User / Buyer</th>
+                                <th className="py-3.5 pl-5">Buyer Email</th>
                                 <th className="py-3.5">Item / Recipe</th>
                                 <th className="py-3.5">Gross Paid</th>
                                 <th className="py-3.5 text-emerald-600">Creator (80%)</th>
                                 <th className="py-3.5 text-amber-600">Admin (20%)</th>
                                 <th className="py-3.5">Date</th>
                                 <th className="py-3.5">Status</th>
-                                <th className="py-3.5 pr-5">Transaction ID</th>
+                                <th className="py-3.5 text-center pr-5">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -148,7 +149,7 @@ const TransactionsPage = () => {
                                                 {tx.userEmail}
                                             </td>
                                             <td className="py-3.5 font-semibold text-base-content/80">
-                                                {tx.title || (tx.recipeId === "membership_upgrade" ? "Pro Upgrade" : "Recipe Unlock")}
+                                                {tx.title || (tx.recipeId === "membership_upgrade" ? "Pro Membership" : "Recipe Access")}
                                             </td>
                                             <td className="py-3.5 font-black text-base-content">
                                                 ${amount.toFixed(2)}
@@ -169,8 +170,14 @@ const TransactionsPage = () => {
                                                     {tx.paymentStatus}
                                                 </span>
                                             </td>
-                                            <td className="py-3.5 pr-5 font-mono text-[10px] opacity-60 select-all truncate max-w-[120px]">
-                                                {tx.transactionId}
+                                            <td className="py-3.5 pr-5 text-center">
+                                                <button
+                                                    onClick={() => setSelectedTx(tx)}
+                                                    className="btn btn-xs btn-ghost btn-square rounded-lg text-primary hover:bg-primary/10"
+                                                    title="View Transaction Details"
+                                                >
+                                                    <FaEye className="w-3.5 h-3.5" />
+                                                </button>
                                             </td>
                                         </tr>
                                     );
@@ -198,6 +205,92 @@ const TransactionsPage = () => {
                     />
                 </div>
             </div>
+
+            {/* Detailed Transaction Inspection Modal */}
+            {selectedTx && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-base-100 border border-base-300 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 relative text-base-content">
+                        <button
+                            onClick={() => setSelectedTx(null)}
+                            className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+                        >
+                            <FaXmark />
+                        </button>
+
+                        <div className="border-b border-base-300 pb-3 pr-8">
+                            <span className="badge badge-success text-white text-[10px] font-bold uppercase tracking-wider mb-1">
+                                {selectedTx.paymentStatus || "Paid"}
+                            </span>
+                            <h3 className="text-xl font-black">Transaction Breakdown</h3>
+                            <p className="text-xs text-base-content/60 font-mono mt-0.5">
+                                Ref: {selectedTx.transactionId || selectedTx._id}
+                            </p>
+                        </div>
+
+                        <div className="space-y-3 text-xs font-medium">
+                            <div className="p-3 bg-base-200/50 rounded-xl space-y-1">
+                                <span className="text-[10px] font-bold uppercase opacity-50 block">Item Purchased</span>
+                                <span className="font-bold text-sm block text-primary">
+                                    {selectedTx.title || (selectedTx.recipeId === "membership_upgrade" ? "RecipeHub Pro Upgrade" : "Recipe Unlock")}
+                                </span>
+                                {selectedTx.recipeId && (
+                                    <span className="text-[10px] font-mono opacity-60 block">Recipe ID: {selectedTx.recipeId}</span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="p-3 bg-base-200/50 rounded-xl">
+                                    <span className="text-[10px] font-bold uppercase opacity-50 block">Buyer Email</span>
+                                    <span className="font-semibold block truncate">{selectedTx.userEmail}</span>
+                                </div>
+
+                                <div className="p-3 bg-base-200/50 rounded-xl">
+                                    <span className="text-[10px] font-bold uppercase opacity-50 block">Date & Time</span>
+                                    <span className="font-semibold block">
+                                        {selectedTx.paidAt ? new Date(selectedTx.paidAt).toLocaleString() : "N/A"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Revenue Breakdown */}
+                            <div className="p-3 bg-base-200/50 rounded-xl space-y-2 border border-base-300/40">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/60 block border-b border-base-300 pb-1">
+                                    Financial Split (80/20)
+                                </span>
+
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="opacity-70">Gross Amount:</span>
+                                    <span className="font-black text-sm">${Number(selectedTx.amount || 0).toFixed(2)}</span>
+                                </div>
+
+                                <div className="flex justify-between items-center text-xs text-emerald-600">
+                                    <span>Creator Share (80%):</span>
+                                    <span className="font-bold">${Number(selectedTx.creatorEarnings || 0).toFixed(2)}</span>
+                                </div>
+                                {selectedTx.creatorEmail && (
+                                    <span className="text-[10px] text-emerald-600/80 font-mono block">
+                                        Paid to: {selectedTx.creatorEmail}
+                                    </span>
+                                )}
+
+                                <div className="flex justify-between items-center text-xs text-amber-600 pt-1 border-t border-base-300/30">
+                                    <span>Platform Net (20%):</span>
+                                    <span className="font-bold">${Number(selectedTx.adminEarnings || (Number(selectedTx.amount || 0) - Number(selectedTx.creatorEarnings || 0))).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                onClick={() => setSelectedTx(null)}
+                                className="btn btn-sm btn-primary w-full rounded-xl font-bold text-white"
+                            >
+                                Close Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
