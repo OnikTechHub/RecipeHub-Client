@@ -11,7 +11,7 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
         totalSales: 0,
         grossSalesVolume: 0,
     });
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
     useEffect(() => {
         if (currentUser?.email) {

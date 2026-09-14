@@ -28,7 +28,7 @@ const RecipeDetailsPage = ({ params }) => {
 
   const { data: session, isPending } = authClient.useSession();
   const currentUserEmail = session?.user?.email;
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   // Fetch recipe details from DB
   const fetchRecipeDetails = async () => {
