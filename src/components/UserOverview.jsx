@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaUtensils, FaHeart, FaThumbsUp, FaCrown, FaUser, FaHandHoldingDollar, FaReceipt } from "react-icons/fa6";
+import { FaUtensils, FaHeart, FaThumbsUp, FaCrown, FaUser, FaHandHoldingDollar, FaReceipt, FaChartLine } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const UserOverview = ({ stats, currentUser, isPremium }) => {
     const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
                 body: JSON.stringify({
                     recipeId: "membership_upgrade",
                     title: "RecipeHub Pro Premium Membership",
-                    price: 19.99, 
+                    price: 19.99,
                     userEmail: currentUser?.email,
                     userId: currentUser?.id || currentUser?._id || "N/A",
                 }),
@@ -135,6 +136,100 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
                         <h3 className="text-3xl font-black mt-1">{creatorStats?.totalSales || 0}</h3>
                     </div>
                     <div className="p-4 bg-amber-500/10 text-amber-500 rounded-xl text-2xl"><FaReceipt /></div>
+                </div>
+            </div>
+
+            {/* Analytics Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Activity & Engagement Bar Chart */}
+                <div className="lg:col-span-7 bg-base-100 border border-base-300 p-6 rounded-3xl shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-base-300/60 pb-3">
+                        <div>
+                            <h2 className="text-lg font-black text-base-content flex items-center gap-2">
+                                <FaChartLine className="text-primary" /> Recipe Activity & Engagement Analytics
+                            </h2>
+                            <p className="text-xs text-base-content/60 font-medium">
+                                Real-time distribution of your recipe creations, favorites, likes, and sales.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="h-64 w-full pt-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                                data={[
+                                    { name: "My Recipes", count: stats?.totalRecipes || 0 },
+                                    { name: "Favorites", count: stats?.totalFavorites || 0 },
+                                    { name: "Likes", count: stats?.totalLikesReceived || 0 },
+                                    { name: "Recipes Sold", count: creatorStats?.totalSales || 0 },
+                                ]}
+                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                                <XAxis dataKey="name" stroke="currentColor" className="text-[11px] opacity-60" />
+                                <YAxis stroke="currentColor" className="text-[11px] opacity-60" allowDecimals={false} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: "rgba(15, 23, 42, 0.9)",
+                                        borderRadius: "12px",
+                                        border: "1px solid rgba(255,255,255,0.1)",
+                                        color: "#fff",
+                                        fontWeight: "bold",
+                                        fontSize: "12px",
+                                    }}
+                                />
+                                <Bar dataKey="count" fill="#10b981" radius={[8, 8, 0, 0]} barSize={40} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Creator Revenue Growth Area Chart */}
+                <div className="lg:col-span-5 bg-base-100 border border-base-300 p-6 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
+                    <div className="flex items-center justify-between border-b border-base-300/60 pb-3">
+                        <div>
+                            <h2 className="text-lg font-black text-base-content flex items-center gap-2">
+                                <FaHandHoldingDollar className="text-emerald-500" /> Revenue & Earnings Overview
+                            </h2>
+                            <p className="text-xs text-base-content/60 font-medium">
+                                Comparison of gross sales volume vs creator 80% net payouts ($).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="h-64 w-full pt-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                                data={[
+                                    { name: "Gross Sales", amount: Number(creatorStats?.grossSalesVolume || 0) },
+                                    { name: "Net Payout (80%)", amount: Number(creatorStats?.totalEarnings || 0) },
+                                ]}
+                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            >
+                                <defs>
+                                    <linearGradient id="userEarnings" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.5} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                                <XAxis dataKey="name" stroke="currentColor" className="text-[11px] opacity-60" />
+                                <YAxis stroke="currentColor" className="text-[11px] opacity-60" />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: "rgba(15, 23, 42, 0.9)",
+                                        borderRadius: "12px",
+                                        border: "1px solid rgba(255,255,255,0.1)",
+                                        color: "#fff",
+                                        fontWeight: "bold",
+                                        fontSize: "12px",
+                                    }}
+                                    formatter={(val) => [`$${Number(val).toFixed(2)}`, "Amount"]}
+                                />
+                                <Area type="monotone" dataKey="amount" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#userEarnings)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
 

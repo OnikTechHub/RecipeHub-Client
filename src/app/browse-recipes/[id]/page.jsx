@@ -54,8 +54,13 @@ const RecipeDetailsPage = ({ params }) => {
   const checkAccess = async (recipeObj) => {
     if (!recipeObj) return;
 
+    const isPaidRecipe =
+      recipeObj.recipeType === "Paid" ||
+      recipeObj.isPaid === true ||
+      Number(recipeObj.price || 0) > 0;
+
     // Free recipe
-    if (!recipeObj.isPaid || Number(recipeObj.price || 0) <= 0) {
+    if (!isPaidRecipe) {
       setHasAccess(true);
       setAccessReason("free");
       return;
