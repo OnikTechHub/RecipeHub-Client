@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaUserSlash, FaUserCheck, FaCrown, FaUserShield, FaUser } from "react-icons/fa";
+import { FaUserSlash, FaUserCheck, FaCrown, FaUserShield, FaUser, FaUserMinus } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { HashLoader } from "react-spinners";
 import Pagination from "@/components/Pagination";
@@ -37,35 +37,42 @@ export default function ManageUsers() {
         loadUsers();
     }, [currentPage]);
 
-    // Make Admin function
-    const handleMakeAdmin = async (id, name) => {
+    // Dynamic Role Update (Promote to Admin / Demote to User)
+    const handleUpdateRole = async (id, targetRole, name) => {
+        const isPromote = targetRole === "admin";
         const confirm = await Swal.fire({
-            title: "Promote to Admin?",
-            text: `Are you sure you want to give ${name} full Administrator permissions?`,
+            title: isPromote ? "Promote to Admin?" : "Demote to User?",
+            text: isPromote
+                ? `Are you sure you want to give ${name} full Administrator permissions?`
+                : `Are you sure you want to revoke admin permissions from ${name}?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#10b981",
+            confirmButtonColor: isPromote ? "#10b981" : "#f59e0b",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, Promote User",
+            confirmButtonText: isPromote ? "Yes, Promote User" : "Yes, Demote Admin",
         });
 
         if (confirm.isConfirmed) {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/make-admin/${id}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/role/${id}`, {
                     method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ role: targetRole }),
                 });
                 const data = await res.json();
                 if (data.success) {
-                    setUsers(users.map((u) => (u._id === id ? { ...u, role: "admin" } : u)));
+                    setUsers(users.map((u) => (u._id === id ? { ...u, role: targetRole } : u)));
                     Swal.fire({
                         title: "Success!",
-                        text: `${name} is now an Administrator.`,
+                        text: `${name}'s role has been updated to ${targetRole}.`,
                         icon: "success",
                         confirmButtonColor: "#10b981",
                     });
+                } else {
+                    Swal.fire("Error", data.message || "Failed to update user role.", "error");
                 }
             } catch (error) {
-                console.error("Error making user admin:", error);
+                console.error("Error updating user role:", error);
                 Swal.fire("Error", "Failed to update user role.", "error");
             }
         }
@@ -212,31 +219,43 @@ export default function ManageUsers() {
 
                                     <td className="text-center">
                                         <div className="flex items-center justify-center gap-2">
-                                            {user.role === "admin" ? (
-                                                <span className="text-xs text-base-content/40 italic font-semibold select-none">System Protected</span>
+                                            {user.email === "admin@recipehub.com" ? (
+                                                <span className="text-xs text-amber-500 font-bold bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 select-none">
+                                                    System Protected
+                                                </span>
                                             ) : (
                                                 <>
-                                                    <button
-                                                        onClick={() => handleMakeAdmin(user._id, user.name)}
-                                                        className="btn btn-xs btn-outline btn-primary gap-1 font-bold rounded-lg px-2.5 py-1 h-auto min-h-0"
-                                                        title="Promote to Administrator"
-                                                    >
-                                                        <FaUserShield /> Make Admin
-                                                    </button>
+                                                    {user.role === "admin" ? (
+                                                        <button
+                                                            onClick={() => handleUpdateRole(user._id, "user", user.name)}
+                                                            className="btn btn-xs btn-warning gap-1 font-bold rounded-lg px-2.5 py-1 h-auto min-h-0 text-white shadow-sm"
+                                                            title="Demote to Regular User"
+                                                        >
+                                                            <FaUserMinus className="text-xs" /> Demote to User
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleUpdateRole(user._id, "admin", user.name)}
+                                                            className="btn btn-xs btn-outline btn-primary gap-1 font-bold rounded-lg px-2.5 py-1 h-auto min-h-0 shadow-sm"
+                                                            title="Promote to Administrator"
+                                                        >
+                                                            <FaUserShield className="text-xs" /> Make Admin
+                                                        </button>
+                                                    )}
 
                                                     {user.isBlocked ? (
                                                         <button
                                                             onClick={() => handleUnblockUser(user._id, user.name)}
                                                             className="btn btn-success btn-xs gap-1 text-white font-bold rounded-lg px-2.5 py-1 h-auto min-h-0"
                                                         >
-                                                            <FaUserCheck /> Unblock
+                                                            <FaUserCheck className="text-xs" /> Unblock
                                                         </button>
                                                     ) : (
                                                         <button
                                                             onClick={() => handleBlockUser(user._id, user.name)}
                                                             className="btn btn-error btn-xs gap-1 text-white font-bold rounded-lg px-2.5 py-1 h-auto min-h-0"
                                                         >
-                                                            <FaUserSlash /> Block
+                                                            <FaUserSlash className="text-xs" /> Block
                                                         </button>
                                                     )}
                                                 </>

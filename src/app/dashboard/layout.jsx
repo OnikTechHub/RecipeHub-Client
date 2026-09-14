@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import {
   FaChartPie, FaUtensils, FaPlusCircle, FaHeart,
   FaShoppingBag, FaUserCircle, FaUsers, FaFlag,
-  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome
+  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome, FaUserShield
 } from "react-icons/fa";
 import { HashLoader } from "react-spinners";
 
@@ -16,18 +16,46 @@ export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const { data: session, isPending } = authClient.useSession();
+  const [liveRole, setLiveRole] = useState(null);
+  const [liveIsPremium, setLiveIsPremium] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/login");
+      return;
+    }
+
+    if (session?.user?.email) {
+      setCheckingRole(true);
+      fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/check-user-role?email=${encodeURIComponent(session.user.email)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            if (data.isBlocked) {
+              authClient.signOut().then(() => {
+                router.push("/login");
+              });
+              return;
+            }
+            if (data.data) {
+              setLiveRole(data.data.role);
+              setLiveIsPremium(data.data.isPremium || false);
+            }
+          }
+        })
+        .catch((err) => console.error("Error fetching live user role:", err))
+        .finally(() => setCheckingRole(false));
+    } else if (!isPending) {
+      setCheckingRole(false);
     }
   }, [session, isPending, router]);
 
-  if (isPending) {
+  if (isPending || checkingRole) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 gap-4">
         <HashLoader color="#10b981" size={50} />
-        <span className="text-xs text-base-content/60 font-medium tracking-wide">Loading Dashboard...</span>
+        <span className="text-xs text-base-content/60 font-medium tracking-wide">Synchronizing Dashboard Permissions...</span>
       </div>
     );
   }
@@ -35,8 +63,13 @@ export default function DashboardLayout({ children }) {
   if (!session) return null;
 
   const currentUser = session.user;
-  const isAdmin = currentUser?.role === "admin" || currentUser?.email === "admin@recipehub.com";
-  const isPremium = currentUser?.isPremium === true;
+  const isAdmin =
+    liveRole === "admin" ||
+    currentUser?.role === "admin" ||
+    currentUser?.email === "admin@recipehub.com" ||
+    currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+  const isPremium = liveIsPremium || currentUser?.isPremium === true;
 
   const isActive = (path) => pathname === path ? "bg-primary text-white font-bold" : "hover:bg-base-300 opacity-80";
 
@@ -118,6 +151,9 @@ export default function DashboardLayout({ children }) {
                 </Link>
                 <Link href="/dashboard/manage-users" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/manage-users")}`}>
                   <FaUsers className="text-lg" /> Manage Users
+                </Link>
+                <Link href="/dashboard/manage-admins" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/manage-admins")}`}>
+                  <FaUserShield className="text-lg" /> Manage Admins
                 </Link>
                 <Link href="/dashboard/manage-recipes" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/manage-recipes")}`}>
                   <FaUtensils className="text-lg" /> Manage Recipes
