@@ -4,6 +4,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import RecipeForm from "@/components/RecipeForm"; 
+import { HashLoader } from "react-spinners"; 
 
 const AddRecipePage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -18,6 +19,8 @@ const AddRecipePage = () => {
         preparationTime: "",
         ingredients: "",
         instructions: "",
+        isPaid: false,
+        price: 0,
     });
 
     const [imageFile, setImageFile] = useState(null);
@@ -131,6 +134,8 @@ const AddRecipePage = () => {
                 authorEmail: currentUserEmail,
                 likesCount: 0,
                 isFeatured: false,
+                isPaid: !!formData.isPaid,
+                price: formData.isPaid ? Math.max(0, Number(formData.price) || 0) : 0,
             };
 
             const res = await fetch(`${SERVER_URL}/recipes`, {
@@ -156,6 +161,8 @@ const AddRecipePage = () => {
                     preparationTime: "",
                     ingredients: "",
                     instructions: "",
+                    isPaid: false,
+                    price: 0,
                 });
                 setImageFile(null);
                 e.target.reset();
@@ -177,8 +184,9 @@ const AddRecipePage = () => {
 
     if (isPending) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-base-100">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <span className="text-xs text-base-content/60 font-medium tracking-wide">Authenticating...</span>
             </div>
         );
     }

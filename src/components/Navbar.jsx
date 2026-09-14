@@ -7,6 +7,7 @@ import { MdDashboard as DashboardIcon, MdLogout as LogoutIcon } from "react-icon
 import { useSession, signOut } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 import { FaUtensils, FaBars, FaMoon, FaSun, FaUser, FaChevronDown } from "react-icons/fa6";
+import { HashLoader } from "react-spinners";
 
 const Navbar = () => {
     const [theme, setTheme] = useState("light");
@@ -133,7 +134,9 @@ const Navbar = () => {
 
                 {/* Live Dynamic Authentication Component */}
                 {isPending ? (
-                    <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-10 h-10 flex items-center justify-center">
+                        <HashLoader color="#10b981" size={24} />
+                    </div>
                 ) : user ? (
                     <div className="dropdown dropdown-end bg-base-300 rounded-2xl ">
 

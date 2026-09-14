@@ -8,6 +8,7 @@ import {
     FaClock, FaUtensils, FaHeart, FaFlag, FaArrowLeft,
     FaReceipt, FaCircleCheck, FaCalendarDays, FaHashtag, FaDollarSign
 } from "react-icons/fa6";
+import { HashLoader } from "react-spinners";
 
 const PurchasedRecipeDetails = () => {
     const { id } = useParams();
@@ -117,9 +118,9 @@ const PurchasedRecipeDetails = () => {
 
     if (loading || sessionLoading) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-transparent gap-3">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-xs font-bold text-primary/70 animate-pulse">Loading Premium Content...</p>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-transparent gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <p className="text-xs font-bold text-primary animate-pulse">Loading Premium Content...</p>
             </div>
         );
     }
@@ -292,7 +293,7 @@ const PurchasedRecipeDetails = () => {
                                     disabled={actionLoading}
                                     className="btn btn-sm btn-error text-white rounded-xl px-5 font-bold"
                                 >
-                                    {actionLoading ? <span className="loading loading-spinner loading-xs"></span> : "Submit Report"}
+                                    {actionLoading ? <HashLoader color="#ffffff" size={16} /> : "Submit Report"}
                                 </button>
                             </div>
                         </form>

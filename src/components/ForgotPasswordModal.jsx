@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FaKey, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRotateRight, FaXmark, FaCheck } from "react-icons/fa6";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { HashLoader } from "react-spinners";
 
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP + New Password
@@ -171,8 +172,8 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
               >
                 {loading ? (
                   <>
-                    <span className="loading loading-spinner loading-sm"></span>
-                    Sending Code...
+                    <HashLoader color="#ffffff" size={16} />
+                    <span>Sending Code...</span>
                   </>
                 ) : (
                   <>
@@ -287,8 +288,8 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
               >
                 {loading ? (
                   <>
-                    <span className="loading loading-spinner loading-sm"></span>
-                    Updating Password...
+                    <HashLoader color="#ffffff" size={16} />
+                    <span>Updating Password...</span>
                   </>
                 ) : (
                   <>

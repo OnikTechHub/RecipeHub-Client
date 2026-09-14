@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUserSlash, FaUserCheck, FaCrown, FaUserShield, FaUser } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { HashLoader } from "react-spinners";
 
 export default function ManageUsers() {
     const [users, setUsers] = useState([]);
@@ -75,9 +76,9 @@ export default function ManageUsers() {
 
     if (loading) {
         return (
-            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-2">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="text-xs font-bold opacity-50 tracking-wider uppercase animate-pulse">Loading RecipeHub Users List...</p>
+            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <p className="text-xs font-bold opacity-60 tracking-wider uppercase animate-pulse">Loading RecipeHub Users List...</p>
             </div>
         );
     }

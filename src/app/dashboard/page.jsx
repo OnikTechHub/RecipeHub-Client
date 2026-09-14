@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast"; 
+import { HashLoader } from "react-spinners"; 
 
 import AdminOverview from "@/components/AdminOverview";
 import UserOverview from "@/components/UserOverview";
@@ -81,9 +82,9 @@ export default function DashboardOverview() {
 
     if (authPending || loading) {
         return (
-            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-2">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="text-xs font-bold opacity-50 tracking-wider uppercase animate-pulse">
+            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <p className="text-xs font-bold opacity-60 tracking-wider uppercase animate-pulse">
                     Initializing Overview Session...
                 </p>
             </div>

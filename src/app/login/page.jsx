@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import ForgotPasswordModal from "@/components/ForgotPasswordModal";
+import { HashLoader } from "react-spinners";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -185,8 +186,17 @@ const LoginPage = () => {
                 disabled={loading}
                 className="w-full h-12 flex items-center justify-center gap-2 bg-gradient-to-r from-primary via-accent to-secondary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.01] hover:opacity-95 active:scale-[0.99] transition-all duration-300 text-sm disabled:opacity-50 disabled:pointer-events-none normal-case cursor-pointer"
               >
-                {loading ? "Signing In..." : "Log In"}
-                {!loading && <FaArrowRight className="text-base" />}
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <HashLoader color="#ffffff" size={16} />
+                    <span>Signing In...</span>
+                  </div>
+                ) : (
+                  <>
+                    <span>Log In</span>
+                    <FaArrowRight className="text-base" />
+                  </>
+                )}
               </button>
             </div>
           </form>

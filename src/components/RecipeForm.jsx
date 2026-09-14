@@ -1,6 +1,7 @@
 
 "use client";
 import React from "react";
+import { HashLoader } from "react-spinners";
 
 const RecipeForm = ({
   formData,
@@ -91,6 +92,79 @@ const RecipeForm = ({
         </div>
       </div>
 
+      {/* Recipe Pricing: Free vs Paid (Premium) */}
+      <div className="bg-base-100 p-4 rounded-xl border border-base-300/60 space-y-3">
+        <label className="label py-0 font-black text-xs uppercase tracking-wider text-base-content/80">
+          Recipe Access & Monetization
+        </label>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+            !formData.isPaid
+              ? "border-primary bg-primary/10 text-primary font-black shadow-sm"
+              : "border-base-300 hover:bg-base-200/50"
+          }`}>
+            <input
+              type="radio"
+              name="recipePricing"
+              checked={!formData.isPaid}
+              onChange={() => setFormData({ ...formData, isPaid: false, price: 0 })}
+              className="radio radio-primary radio-sm"
+            />
+            <div>
+              <span className="text-xs font-bold block">Free Recipe</span>
+              <span className="text-[10px] opacity-70 block">Open to all foodies</span>
+            </div>
+          </label>
+
+          <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+            formData.isPaid
+              ? "border-amber-500 bg-amber-500/10 text-amber-600 font-black shadow-sm"
+              : "border-base-300 hover:bg-base-200/50"
+          }`}>
+            <input
+              type="radio"
+              name="recipePricing"
+              checked={formData.isPaid}
+              onChange={() => setFormData({ ...formData, isPaid: true, price: formData.price > 0 ? formData.price : 4.99 })}
+              className="radio radio-warning radio-sm"
+            />
+            <div>
+              <span className="text-xs font-bold block">Paid (Premium)</span>
+              <span className="text-[10px] opacity-70 block">Lock secret ingredients</span>
+            </div>
+          </label>
+        </div>
+
+        {formData.isPaid && (
+          <div className="pt-2 space-y-2 border-t border-base-300/40 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="label font-bold text-xs py-0">Price in USD ($)</label>
+              <span className="text-[11px] font-semibold text-emerald-600">
+                You receive 80% (${((Number(formData.price) || 0) * 0.8).toFixed(2)}) per purchase
+              </span>
+            </div>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-base-content/50">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0.99"
+                max="99.99"
+                required={formData.isPaid}
+                placeholder="4.99"
+                className="input input-bordered w-full pl-8 font-bold text-sm"
+                value={formData.price || ""}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              />
+            </div>
+            <p className="text-[10px] text-base-content/60">
+              Platform fee: 20% (${((Number(formData.price) || 0) * 0.2).toFixed(2)}). Buyers get lifetime access.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Ingredients */}
       <div>
         <label className="label font-bold text-xs">Ingredients (Separate with commas)</label>
@@ -123,7 +197,10 @@ const RecipeForm = ({
         className="btn btn-primary w-full rounded-xl text-white font-bold normal-case"
       >
         {uploading ? (
-          <span className="loading loading-spinner loading-sm"></span>
+          <div className="flex items-center justify-center gap-2">
+            <HashLoader color="#ffffff" size={16} />
+            <span>Publishing Recipe...</span>
+          </div>
         ) : (
           "Publish Recipe Live"
         )}

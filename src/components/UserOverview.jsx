@@ -1,10 +1,29 @@
 "use client";
-import React, { useState } from "react";
-import { FaUtensils, FaHeart, FaThumbsUp, FaCrown, FaUser } from "react-icons/fa6";
+import React, { useState, useEffect } from "react";
+import { FaUtensils, FaHeart, FaThumbsUp, FaCrown, FaUser, FaHandHoldingDollar, FaReceipt } from "react-icons/fa6";
+import { HashLoader } from "react-spinners";
 
 const UserOverview = ({ stats, currentUser, isPremium }) => {
     const [loading, setLoading] = useState(false);
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL ;
+    const [creatorStats, setCreatorStats] = useState({
+        totalEarnings: 0,
+        totalSales: 0,
+        grossSalesVolume: 0,
+    });
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+    useEffect(() => {
+        if (currentUser?.email) {
+            fetch(`${SERVER_URL}/creator-earnings?email=${encodeURIComponent(currentUser.email)}`)
+                .then((res) => res.json())
+                .then((resData) => {
+                    if (resData.success && resData.data) {
+                        setCreatorStats(resData.data);
+                    }
+                })
+                .catch((err) => console.error("Error fetching creator earnings:", err));
+        }
+    }, [currentUser?.email, SERVER_URL]);
 
     const handleUpgradeMembership = async () => {
         setLoading(true);
@@ -97,6 +116,26 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
                     </div>
                     <div className="p-4 bg-success/10 text-success rounded-xl text-2xl"><FaThumbsUp /></div>
                 </div>
+
+                {/* Creator Net Earnings (80%) */}
+                <div className="bg-base-200/50 border border-emerald-500/20 p-6 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Creator Earnings (80%)</p>
+                        <h3 className="text-3xl font-black mt-1 text-emerald-600">
+                            ${Number(creatorStats?.totalEarnings || 0).toFixed(2)}
+                        </h3>
+                    </div>
+                    <div className="p-4 bg-emerald-500/10 text-emerald-600 rounded-xl text-2xl"><FaHandHoldingDollar /></div>
+                </div>
+
+                {/* Total Recipes Sold */}
+                <div className="bg-base-200/50 border border-base-300 p-6 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Paid Recipes Sold</p>
+                        <h3 className="text-3xl font-black mt-1">{creatorStats?.totalSales || 0}</h3>
+                    </div>
+                    <div className="p-4 bg-amber-500/10 text-amber-500 rounded-xl text-2xl"><FaReceipt /></div>
+                </div>
             </div>
 
             {/* Upgrade Premium Banner */}
@@ -119,7 +158,7 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
                         className={`btn btn-warning rounded-xl font-black shadow px-6 normal-case hover:scale-105 transition-transform ${loading ? "loading" : ""}`}
                     >
                         {loading ? (
-                            <span className="loading loading-spinner loading-xs"></span>
+                            <HashLoader color="#000000" size={16} />
                         ) : (
                             "Become a Premium Member"
                         )}

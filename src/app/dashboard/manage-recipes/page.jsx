@@ -4,11 +4,19 @@ import { FaTrashAlt, FaUtensils, FaUser, FaTags, FaEdit, FaCheckCircle, FaStar }
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import EditRecipeModal from "@/components/EditRecipeModal"; 
+import Pagination from "@/components/Pagination";
+import { HashLoader } from "react-spinners";
 
 export default function ManageRecipes() {
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeEditRecipe, setActiveEditRecipe] = useState(null);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalRecipes, setTotalRecipes] = useState(0);
+    const limit = 10;
 
     const toastStyle = {
         position: "top-center",
@@ -23,10 +31,14 @@ export default function ManageRecipes() {
     const loadRecipes = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes`);
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes?page=${currentPage}&limit=${limit}`
+            );
             const data = await res.json();
             if (data.success) {
-                setRecipes(data.data);
+                setRecipes(data.data || []);
+                setTotalPages(data.totalPages || 1);
+                setTotalRecipes(data.totalRecipes !== undefined ? data.totalRecipes : (data.data?.length || 0));
             }
         } catch (error) {
             console.error(error);
@@ -38,7 +50,7 @@ export default function ManageRecipes() {
 
     useEffect(() => {
         loadRecipes();
-    }, []);
+    }, [currentPage]);
 
     // Delete Recipe fun
     const handleDeleteRecipe = async (id, title) => {
@@ -115,9 +127,9 @@ export default function ManageRecipes() {
     };
     if (loading) {
         return (
-            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-2">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="text-xs font-bold opacity-50 tracking-wider uppercase animate-pulse">Processing Community Ledger...</p>
+            <div className="min-h-[50vh] flex flex-col justify-center items-center gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <p className="text-xs font-bold opacity-60 tracking-wider uppercase animate-pulse">Processing Community Ledger...</p>
             </div>
         );
     }
@@ -215,6 +227,17 @@ export default function ManageRecipes() {
                         )}
                     </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                <div className="p-3 border-t border-base-300/40 bg-base-100/50">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalRecipes}
+                        itemsPerPage={limit}
+                        onPageChange={(p) => setCurrentPage(p)}
+                    />
+                </div>
             </div>
 
             {/* EditRecipeModal */}

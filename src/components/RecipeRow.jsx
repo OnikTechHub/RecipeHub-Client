@@ -35,9 +35,20 @@ const RecipeRow = ({ recipe, index, onDelete, onEditClick }) => {
         </div>
       </td>
 
-      {/* Category */}
+      {/* Category & Pricing */}
       <td>
-        <span className="badge badge-neutral font-bold">{category}</span>
+        <div className="flex flex-col gap-1 items-start">
+          <span className="badge badge-neutral font-bold text-xs">{category}</span>
+          {recipe.isPaid && Number(recipe.price || 0) > 0 ? (
+            <span className="badge badge-warning badge-sm font-black text-[10px]">
+              ${Number(recipe.price).toFixed(2)} (Paid)
+            </span>
+          ) : (
+            <span className="badge badge-success badge-sm badge-outline font-bold text-[10px]">
+              Free
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Prep Time */}

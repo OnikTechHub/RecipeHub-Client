@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FaUtensils, FaHeart, FaUser, FaFire } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Link from "next/link"; 
+import { HashLoader } from "react-spinners"; 
 
 const PopularRecipes = () => {
     const [popularRecipes, setPopularRecipes] = useState([]);
@@ -33,8 +34,9 @@ const PopularRecipes = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-[300px]">
-                <span className="loading loading-spinner loading-lg text-rose-500"></span>
+            <div className="flex flex-col justify-center items-center min-h-[300px] gap-3">
+                <HashLoader color="#10b981" size={45} />
+                <span className="text-xs text-base-content/60 font-medium">Loading trending recipes...</span>
             </div>
         );
     }

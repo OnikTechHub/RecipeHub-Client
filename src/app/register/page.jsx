@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import OtpModal from "@/components/OtpModal";
+import { HashLoader } from "react-spinners";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -327,8 +328,8 @@ const RegisterPage = () => {
               } bg-base-100/50 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden relative group/avatar`}
             >
               {uploadingImage ? (
-                <div className="flex flex-col items-center gap-1.5 p-2 text-center">
-                  <span className="loading loading-spinner loading-md text-primary"></span>
+                <div className="flex flex-col items-center gap-2 p-2 text-center">
+                  <HashLoader color="#10b981" size={26} />
                   <span className="text-[10px] font-semibold text-primary">Uploading...</span>
                 </div>
               ) : photoUrl ? (
@@ -567,7 +568,7 @@ const RegisterPage = () => {
             >
               {loading ? (
                 <>
-                  <span className="loading loading-spinner loading-sm"></span>
+                  <HashLoader color="#ffffff" size={16} />
                   <span>Sending Verification Code...</span>
                 </>
               ) : (

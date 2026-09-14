@@ -52,6 +52,24 @@ const AdminOverview = ({ stats, currentUser }) => {
                     </div>
                     <div className="p-4 bg-error/10 text-error rounded-xl text-2xl"><FaFlag /></div>
                 </div>
+
+                {/* Gross Volume */}
+                <div className="bg-base-200/50 border border-base-300 p-6 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Gross Volume</p>
+                        <h3 className="text-3xl font-black mt-1">${Number(stats?.grossVolume || 0).toFixed(2)}</h3>
+                    </div>
+                    <div className="p-4 bg-emerald-500/10 text-emerald-600 rounded-xl text-2xl">💰</div>
+                </div>
+
+                {/* Admin Platform Commission (20%) */}
+                <div className="bg-base-200/50 border border-amber-500/20 p-6 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">Platform Net (20%)</p>
+                        <h3 className="text-3xl font-black mt-1 text-amber-600">${Number(stats?.adminEarnings || 0).toFixed(2)}</h3>
+                    </div>
+                    <div className="p-4 bg-amber-500/10 text-amber-500 rounded-xl text-2xl">🏛️</div>
+                </div>
             </div>
         </div>
     );

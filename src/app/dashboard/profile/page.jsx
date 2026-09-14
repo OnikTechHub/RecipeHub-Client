@@ -4,6 +4,7 @@ import { FaUser, FaEnvelope, FaLink, FaCircleCheck, FaCrown } from "react-icons/
 import { Toaster, toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
+import { HashLoader } from "react-spinners";
 
 const ProfilePage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -96,8 +97,9 @@ const ProfilePage = () => {
 
     if (isPending) {
         return (
-            <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-transparent gap-3">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-transparent gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <span className="text-xs text-base-content/60 font-medium tracking-wide">Loading profile...</span>
             </div>
         );
     }
@@ -196,7 +198,7 @@ const ProfilePage = () => {
                             </div>
                             <div className="flex justify-end pt-2">
                                 <button type="submit" disabled={updating} className="btn btn-primary rounded-xl btn-sm font-bold normal-case px-6 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white border-none">
-                                    {updating ? <span className="loading loading-spinner loading-xs"></span> : <><FaCircleCheck className="text-xs" /> <span>Save Changes</span></>}
+                                    {updating ? <HashLoader color="#ffffff" size={16} /> : <><FaCircleCheck className="text-xs" /> <span>Save Changes</span></>}
                                 </button>
                             </div>
                         </form>

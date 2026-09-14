@@ -5,8 +5,10 @@ import { Toaster, toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import RecipeRow from "@/components/RecipeRow";
+import Pagination from "@/components/Pagination";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { FaEye } from "react-icons/fa6";
+import { HashLoader } from "react-spinners";
 
 const MyRecipesPage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -15,6 +17,12 @@ const MyRecipesPage = () => {
 
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalRecipes, setTotalRecipes] = useState(0);
+    const limit = 8;
 
     // Modal & Image Upload States
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,16 +33,20 @@ const MyRecipesPage = () => {
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
     const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
-    // Fetch Data by Email
+    // Fetch Data by Email with Pagination and LIFO
     useEffect(() => {
         const fetchMyRecipes = async () => {
             if (!currentUserEmail) return;
             try {
                 setLoading(true);
-                const res = await fetch(`${SERVER_URL}/my-recipes?email=${currentUserEmail}`);
+                const res = await fetch(
+                    `${SERVER_URL}/my-recipes?email=${encodeURIComponent(currentUserEmail)}&page=${currentPage}&limit=${limit}`
+                );
                 const data = await res.json();
                 if (data.success) {
                     setRecipes(data.data || []);
+                    setTotalPages(data.totalPages || 1);
+                    setTotalRecipes(data.totalRecipes !== undefined ? data.totalRecipes : (data.data?.length || 0));
                 } else {
                     toast.error(data.message || "Failed to load recipes.");
                 }
@@ -47,7 +59,7 @@ const MyRecipesPage = () => {
         };
 
         fetchMyRecipes();
-    }, [currentUserEmail, SERVER_URL]);
+    }, [currentUserEmail, currentPage, SERVER_URL]);
 
     // Delete Recipe Handler
 
@@ -193,8 +205,9 @@ const MyRecipesPage = () => {
 
     if (isPending) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center bg-base-100">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-base-100 gap-4">
+                <HashLoader color="#10b981" size={50} />
+                <span className="text-sm text-base-content/60 font-medium tracking-wide">Authenticating...</span>
             </div>
         );
     }
@@ -225,8 +238,9 @@ const MyRecipesPage = () => {
 
             {/* Content Table Area */}
             {loading ? (
-                <div className="flex justify-center items-center h-48">
-                    <span className="loading loading-spinner loading-md text-primary"></span>
+                <div className="flex flex-col justify-center items-center h-56 gap-4">
+                    <HashLoader color="#10b981" size={42} />
+                    <span className="text-xs text-base-content/60 font-medium tracking-wide">Loading your recipes...</span>
                 </div>
             ) : recipes.length === 0 ? (
                 <div className="text-center py-16 bg-base-200/40 border border-dashed border-base-300 rounded-3xl p-6">
@@ -253,31 +267,44 @@ const MyRecipesPage = () => {
                                 <RecipeRow
                                     key={recipe._id}
                                     recipe={recipe}
-                                    index={index}
+                                    index={(currentPage - 1) * limit + index}
                                     onDelete={handleDeleteRecipe}
                                     onEditClick={openEditModal}
                                 />
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="p-3 border-t border-base-300/40 bg-base-100/50">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalRecipes}
+                            itemsPerPage={limit}
+                            onPageChange={(p) => setCurrentPage(p)}
+                        />
+                    </div>
                 </div>
             )}
 
             {/* Full Feature Edit Modal with Live Image File Uploader */}
             {isModalOpen && selectedRecipe && (
-                <div className="modal modal-open items-center justify-center backdrop-blur-sm transition-all z-50">
-                    <div className="modal-box max-w-xl bg-base-100 rounded-2xl p-6 border border-base-300/60 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <div className="modal modal-open items-center justify-center p-3 sm:p-4 backdrop-blur-xs transition-all z-50">
+                    <div className="modal-box w-full max-w-xl bg-base-100 rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-base-300/80 shadow-2xl relative max-h-[92vh] overflow-y-auto">
 
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 font-bold"
+                            className="btn btn-sm btn-circle btn-ghost absolute right-3.5 top-3.5 font-bold hover:bg-base-200"
                         >✕</button>
 
-                        <h3 className="font-black text-xl mb-1 text-base-content">Update Recipe Details</h3>
-                        <p className="text-xs text-base-content/60 mb-6">Modify the recipe fields below and save changes.</p>
+                        <div className="border-b border-base-300 pb-3 pr-8">
+                            <h3 className="font-black text-xl sm:text-2xl mb-0.5 text-base-content">Update Recipe Details</h3>
+                            <p className="text-xs text-base-content/60">Modify the recipe fields and pricing below, then save changes.</p>
+                        </div>
 
-                        <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                        <form onSubmit={handleUpdateSubmit} className="space-y-4 mt-4">
                             {/* Recipe Name */}
                             <div className="form-control w-full">
                                 <label className="label py-1 font-bold text-xs uppercase text-base-content/70">Recipe Name</label>
@@ -291,7 +318,7 @@ const MyRecipesPage = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                                 {/* Category */}
                                 <div className="form-control w-full">
                                     <label className="label py-1 font-bold text-xs uppercase text-base-content/70">Category</label>
@@ -319,7 +346,7 @@ const MyRecipesPage = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 items-end">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-end">
                                 {/* Preparation Time */}
                                 <div className="form-control w-full">
                                     <label className="label py-1 font-bold text-xs uppercase text-base-content/70">Prep Time</label>
@@ -360,6 +387,95 @@ const MyRecipesPage = () => {
                                 </div>
                             )}
 
+                            {/* Recipe Monetization & Pricing (Free vs Paid) */}
+                            <div className="bg-base-200/50 p-4 rounded-2xl border border-base-300/80 space-y-3">
+                                <label className="label py-0 font-black text-xs uppercase tracking-wider text-base-content/80">
+                                    Recipe Access & Monetization
+                                </label>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                        !selectedRecipe.isPaid
+                                            ? "border-primary bg-primary/10 text-primary font-black shadow-xs"
+                                            : "border-base-300 bg-base-100 hover:bg-base-200/60 text-base-content"
+                                    }`}>
+                                        <input
+                                            type="radio"
+                                            name="myRecipePricing"
+                                            checked={!selectedRecipe.isPaid}
+                                            onChange={() => setSelectedRecipe(prev => ({ ...prev, isPaid: false, price: 0 }))}
+                                            className="radio radio-primary radio-sm"
+                                        />
+                                        <div>
+                                            <span className="text-xs font-bold block">Free Recipe</span>
+                                            <span className="text-[10px] opacity-70 block">Open to everyone</span>
+                                        </div>
+                                    </label>
+
+                                    <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                        selectedRecipe.isPaid
+                                            ? "border-amber-500 bg-amber-500/10 text-amber-600 font-black shadow-xs"
+                                            : "border-base-300 bg-base-100 hover:bg-base-200/60 text-base-content"
+                                    }`}>
+                                        <input
+                                            type="radio"
+                                            name="myRecipePricing"
+                                            checked={!!selectedRecipe.isPaid}
+                                            onChange={() => setSelectedRecipe(prev => ({
+                                                ...prev,
+                                                isPaid: true,
+                                                price: prev.price > 0 ? prev.price : 4.99
+                                            }))}
+                                            className="radio radio-warning radio-sm"
+                                        />
+                                        <div>
+                                            <span className="text-xs font-bold flex items-center gap-1">
+                                                Paid (Premium)
+                                            </span>
+                                            <span className="text-[10px] opacity-70 block">Lock secret ingredients</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                {selectedRecipe.isPaid && (
+                                    <div className="pt-2 space-y-2.5 border-t border-base-300/60 animate-fadeIn">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                            <label className="label py-0 font-bold text-xs text-base-content/80">
+                                                Price in USD ($)
+                                            </label>
+                                            <span className="text-[11px] font-semibold text-emerald-600">
+                                                You receive 80% (${((Number(selectedRecipe.price) || 0) * 0.8).toFixed(2)}) per purchase
+                                            </span>
+                                        </div>
+
+                                        <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center font-bold text-base-content/50 text-sm">$</span>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.99"
+                                                max="99.99"
+                                                required={selectedRecipe.isPaid}
+                                                placeholder="4.99"
+                                                name="price"
+                                                value={selectedRecipe.price || ""}
+                                                onChange={handleInputChange}
+                                                className="input input-bordered w-full pl-9 rounded-xl font-bold text-sm focus:outline-none focus:border-amber-500"
+                                            />
+                                        </div>
+
+                                        <div className="p-2.5 bg-base-100 rounded-xl border border-base-300/50 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] gap-1">
+                                            <span className="opacity-70">
+                                                Platform Service Fee: 20% (${((Number(selectedRecipe.price) || 0) * 0.2).toFixed(2)})
+                                            </span>
+                                            <span className="font-bold text-primary">
+                                                Buyers receive Lifetime Access
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Ingredients Field */}
                             <div className="form-control w-full">
                                 <label className="label py-1 font-bold text-xs uppercase text-base-content/70">
@@ -397,28 +513,33 @@ const MyRecipesPage = () => {
                             </div>
 
                             {/* Modal Actions */}
-                            <div className="modal-action pt-2 gap-2">
-
+                            <div className="modal-action border-t border-base-300 pt-4 flex flex-col sm:flex-row gap-2.5 justify-end">
                                 <button
-                                    onClick={() => router.push(`/recipe/${recipe._id}`)}
-                                    className="btn btn-sm btn-ghost"
-                                    title="View Recipe"
+                                    type="button"
+                                    onClick={() => router.push(`/browse-recipes/${selectedRecipe._id}`)}
+                                    className="btn btn-sm btn-ghost rounded-xl gap-2 font-semibold order-3 sm:order-1"
+                                    title="View Public Recipe"
                                 >
-                                    <FaEye className="w-4 h-4" />
+                                    <FaEye className="w-4 h-4 text-primary" />
+                                    <span>Preview Recipe</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="btn btn-sm btn-ghost rounded-xl px-4"
+                                    className="btn btn-sm btn-ghost rounded-xl px-4 font-bold order-2"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={updateLoading || uploadingImage}
-                                    className="btn btn-sm btn-primary rounded-xl px-5 text-white font-bold"
+                                    className="btn btn-sm btn-primary rounded-xl px-6 text-white font-bold order-1 sm:order-3 shadow-md shadow-primary/20"
                                 >
-                                    {updateLoading ? <span className="loading loading-spinner loading-xs"></span> : "Save Changes"}
+                                    {updateLoading ? (
+                                        <HashLoader color="#ffffff" size={16} />
+                                    ) : (
+                                        "Save Changes"
+                                    )}
                                 </button>
                             </div>
                         </form>

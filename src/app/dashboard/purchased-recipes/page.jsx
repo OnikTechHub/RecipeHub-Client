@@ -5,11 +5,19 @@ import { Toaster, toast } from "react-hot-toast";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import Pagination from "@/components/Pagination";
+import { HashLoader } from "react-spinners";
 
 const MyPurchasedRecipesPage = () => {
     const [purchasedItems, setPurchasedItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
+
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalTransactions, setTotalTransactions] = useState(0);
+    const limit = 8;
 
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -42,7 +50,7 @@ const MyPurchasedRecipesPage = () => {
                 toast.dismiss();
 
                 toast.success("Payment Successful!", {
-                    duration: 1000,
+                    duration: 1500,
                     position: "top-center",
                     style: {
                         background: "#1e1b4b", 
@@ -78,11 +86,16 @@ const MyPurchasedRecipesPage = () => {
         if (!currentUserEmail) return;
 
         try {
-            const res = await fetch(`${SERVER_URL}/transactions?email=${currentUserEmail}`);
+            setLoading(true);
+            const res = await fetch(
+                `${SERVER_URL}/transactions?email=${encodeURIComponent(currentUserEmail)}&page=${currentPage}&limit=${limit}`
+            );
             const data = await res.json();
 
             if (data.success) {
-                setPurchasedItems(data.data);
+                setPurchasedItems(data.data || []);
+                setTotalPages(data.totalPages || 1);
+                setTotalTransactions(data.totalTransactions !== undefined ? data.totalTransactions : (data.data?.length || 0));
             } else {
                 toast.error(data.message || "Failed to load purchased items.");
             }
@@ -104,13 +117,17 @@ const MyPurchasedRecipesPage = () => {
         } else if (!isPending && !currentUserEmail) {
             setLoading(false);
         }
-    }, [currentUserEmail, isPending, sessionId]);
+    }, [currentUserEmail, isPending, sessionId, currentPage]);
 
     if (isPending || loading || verifying) {
         return (
-            <div className="w-full h-[70vh] flex flex-col items-center justify-center bg-transparent gap-3">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                {verifying && <p className="text-xs font-bold text-primary animate-pulse">Securing your transaction with Stripe...</p>}
+            <div className="w-full h-[70vh] flex flex-col items-center justify-center bg-transparent gap-4">
+                <HashLoader color="#10b981" size={50} />
+                {verifying ? (
+                    <p className="text-xs font-bold text-primary animate-pulse">Securing your transaction with Stripe...</p>
+                ) : (
+                    <p className="text-xs font-medium text-base-content/60">Loading purchased recipes...</p>
+                )}
             </div>
         );
     }
@@ -227,13 +244,21 @@ const MyPurchasedRecipesPage = () => {
 
                                         <td className="py-4 pr-6 text-right">
                                             {item.recipeId !== "membership_upgrade" ? (
-                                                <Link
-                                                    href={`/dashboard/purchased-recipes/${item.recipeId}`}
-                                                    className="btn btn-primary btn-xs font-bold rounded-xl normal-case gap-1 hover:scale-105 transition-transform"
-                                                >
-                                                    <span>View Details</span>
-                                                    <FaArrowRight className="text-[9px]" />
-                                                </Link>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <Link
+                                                        href={`/browse-recipes/${item.recipeId}`}
+                                                        className="btn btn-primary btn-xs font-bold rounded-xl normal-case gap-1 hover:scale-105 transition-transform"
+                                                    >
+                                                        <span>Cook Recipe</span>
+                                                        <FaArrowRight className="text-[9px]" />
+                                                    </Link>
+                                                    <Link
+                                                        href={`/dashboard/purchased-recipes/${item.recipeId}`}
+                                                        className="btn btn-ghost btn-xs font-semibold rounded-xl normal-case opacity-70 hover:opacity-100"
+                                                    >
+                                                        Receipt
+                                                    </Link>
+                                                </div>
                                             ) : (
                                                 <span className="badge badge-sm bg-success/10 text-success border-success/20 font-black text-[10px] tracking-wide uppercase px-2.5 py-2">
                                                     Active Premium
@@ -244,6 +269,17 @@ const MyPurchasedRecipesPage = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Pagination Bar */}
+                    <div className="p-3 border-t border-base-300/40 bg-base-100/50">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalTransactions}
+                            itemsPerPage={limit}
+                            onPageChange={(p) => setCurrentPage(p)}
+                        />
                     </div>
                 </div>
             )}

@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaMagnifyingGlass, FaSliders, FaClock, FaStar } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaSliders, FaClock, FaStar, FaCrown } from "react-icons/fa6";
 import Link from "next/link";
+import Pagination from "@/components/Pagination";
+import { HashLoader } from "react-spinners";
 
 const BrowseRecipesPage = () => {
     const [recipes, setRecipes] = useState([]);
@@ -12,6 +14,7 @@ const BrowseRecipesPage = () => {
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalRecipes, setTotalRecipes] = useState(0);
     const limit = 6;
 
     const categories = ["All", "Breakfast", "Lunch", "Dinner", "Desserts"];
@@ -34,6 +37,7 @@ const BrowseRecipesPage = () => {
                 if (json.success) {
                     setRecipes(json.data);
                     setTotalPages(json.totalPages || 1);
+                    setTotalRecipes(json.totalRecipes || 0);
                 }
             } catch (error) {
                 console.error("Express API connection failed:", error);
@@ -91,8 +95,9 @@ const BrowseRecipesPage = () => {
 
                     <div className="lg:col-span-9">
                         {loading ? (
-                            <div className="flex justify-center items-center h-48">
-                                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            <div className="flex flex-col justify-center items-center h-64 gap-4">
+                                <HashLoader color="#10b981" size={45} />
+                                <span className="text-xs text-base-content/60 font-medium tracking-wide">Loading recipes...</span>
                             </div>
                         ) : recipes.length === 0 ? (
                             <div className="text-center py-12 bg-base-200/20 rounded-2xl border border-dashed border-base-300">
@@ -102,45 +107,49 @@ const BrowseRecipesPage = () => {
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {recipes.map((recipe) => (
-                                        <div key={recipe._id} className="bg-base-100 rounded-2xl border border-base-300/40 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col">
+                                        <div key={recipe._id} className="bg-base-100 rounded-2xl border border-base-300/40 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 group flex flex-col">
                                             <div className="relative h-48 overflow-hidden bg-base-200">
-                                                <img src={recipe.image} alt={recipe.recipeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-base-100/80 backdrop-blur-md text-primary">{recipe.category}</span>
+                                                <img src={recipe.image || recipe.recipeImage} alt={recipe.recipeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-base-100/90 backdrop-blur-md text-primary shadow-sm">
+                                                    {Array.isArray(recipe.category) ? recipe.category[0] : recipe.category || "General"}
+                                                </span>
+
+                                                {/* Free vs Premium Badge */}
+                                                {recipe.isPaid && Number(recipe.price || 0) > 0 ? (
+                                                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500 text-white shadow-md flex items-center gap-1 tracking-wider">
+                                                        <FaCrown className="text-[9px]" /> ${Number(recipe.price).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md tracking-wider">
+                                                        Free
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="p-5 flex flex-col flex-grow justify-between">
                                                 <div>
                                                     <div className="flex items-center gap-3 text-xs opacity-60 mb-2 font-medium">
-                                                        <span className="flex items-center gap-1"><FaClock className="text-[10px]" /> {recipe.preparationTime || "N/A"}</span>
+                                                        <span className="flex items-center gap-1"><FaClock className="text-[10px]" /> {recipe.preparationTime || recipe.prepTime || "N/A"}</span>
                                                         <span className="flex items-center gap-1 text-amber-500"><FaStar className="text-[10px]" /> {recipe.ratings || 5.0}</span>
                                                     </div>
                                                     <h3 className="font-bold text-base text-base-content tracking-tight line-clamp-2 mb-4 group-hover:text-primary transition-colors">{recipe.recipeName}</h3>
                                                 </div>
-                                                <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case">View Details</Link>
+                                                <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case shadow-sm hover:shadow-md">
+                                                    {recipe.isPaid && Number(recipe.price || 0) > 0 ? "Unlock Premium" : "View Recipe"}
+                                                </Link>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Pagination Controls */}
-                                <div className="flex justify-center items-center gap-4 mt-12">
-                                    <button
-                                        disabled={currentPage === 1}
-                                        onClick={() => setCurrentPage(prev => prev - 1)}
-                                        className="btn btn-outline btn-sm px-6"
-                                    >
-                                        Previous
-                                    </button>
-                                    <span className="text-sm font-bold">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                    <button
-                                        disabled={currentPage === totalPages}
-                                        onClick={() => setCurrentPage(prev => prev + 1)}
-                                        className="btn btn-outline btn-sm px-6"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
+                                {/* Universal Pagination Component */}
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    totalItems={totalRecipes}
+                                    itemsPerPage={limit}
+                                    onPageChange={(p) => setCurrentPage(p)}
+                                    className="mt-10"
+                                />
                             </>
                         )}
                     </div>

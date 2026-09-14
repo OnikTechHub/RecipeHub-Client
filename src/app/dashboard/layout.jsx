@@ -8,6 +8,7 @@ import {
   FaShoppingBag, FaUserCircle, FaUsers, FaFlag,
   FaExchangeAlt, FaBars, FaSignOutAlt, FaHome
 } from "react-icons/fa";
+import { HashLoader } from "react-spinners";
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -24,8 +25,9 @@ export default function DashboardLayout({ children }) {
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-100">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 gap-4">
+        <HashLoader color="#10b981" size={50} />
+        <span className="text-xs text-base-content/60 font-medium tracking-wide">Loading Dashboard...</span>
       </div>
     );
   }

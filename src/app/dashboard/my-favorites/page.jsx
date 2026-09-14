@@ -6,6 +6,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { toast, Toaster } from "react-hot-toast";
 import { FaHeartBroken, FaTrash, FaEye } from "react-icons/fa";
+import { HashLoader } from "react-spinners";
 
 const MyFavorites = () => {
     const { data: session } = authClient.useSession();
@@ -50,8 +51,9 @@ const MyFavorites = () => {
             <h2 className="text-2xl font-bold mb-6">My Favorites</h2>
 
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <p className="text-gray-500">Loading your favorites...</p>
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <HashLoader color="#10b981" size={45} />
+                    <p className="text-xs text-base-content/60 font-medium tracking-wide">Loading your favorites...</p>
                 </div>
             ) : favorites.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">

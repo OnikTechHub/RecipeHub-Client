@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaShieldHalved, FaArrowRight, FaRotateRight, FaXmark, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { HashLoader } from "react-spinners";
 
 const OtpModal = ({ isOpen, onClose, email, onVerifySuccess, onResendOtp }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -213,8 +214,8 @@ const OtpModal = ({ isOpen, onClose, email, onVerifySuccess, onResendOtp }) => {
             >
               {loading ? (
                 <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Verifying Account...
+                  <HashLoader color="#ffffff" size={16} />
+                  <span>Verifying Account...</span>
                 </>
               ) : (
                 <>
