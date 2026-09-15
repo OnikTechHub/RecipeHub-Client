@@ -23,12 +23,21 @@ const AdminReports = () => {
         try {
             setLoading(true);
             const res = await axios.get(`${SERVER_URL}/admin/reports?page=${currentPage}&limit=${limit}`);
-            if (res.data?.success) {
-                setReports(res.data.data || []);
+            if (res.data?.success && Array.isArray(res.data.data)) {
+                // Client-side grouping fallback by recipeId
+                const groupedMap = new Map();
+                res.data.data.forEach((item) => {
+                    const key = item.recipeId || item._id;
+                    if (!groupedMap.has(key)) {
+                        groupedMap.set(key, item);
+                    }
+                });
+                const uniqueList = Array.from(groupedMap.values());
+                setReports(uniqueList);
                 setTotalPages(res.data.totalPages || 1);
-                setTotalReports(res.data.totalReports !== undefined ? res.data.totalReports : (res.data.data?.length || 0));
+                setTotalReports(res.data.totalReports !== undefined ? res.data.totalReports : uniqueList.length);
             } else {
-                setReports(Array.isArray(res.data) ? res.data : []);
+                setReports([]);
             }
         } catch (err) {
             console.error("Failed to load reports:", err);
@@ -42,11 +51,11 @@ const AdminReports = () => {
         fetchReports();
     }, [currentPage, SERVER_URL]);
 
-    // Handle Delete Recipe completely (Recipe + Reports)
+    // Handle Delete Recipe completely (Recipe + all associated Reports)
     const handleDeleteRecipe = async (reportId, recipeId, recipeName) => {
         const confirm = await Swal.fire({
             title: "Delete Recipe & Clear Flags?",
-            text: `Permanently delete "${recipeName || 'this recipe'}" from RecipeHub? This will also clear all report flags.`,
+            text: `Permanently delete "${recipeName || 'this recipe'}" from RecipeHub? This will also clear all associated report flags.`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#ef4444",
@@ -62,8 +71,10 @@ const AdminReports = () => {
                 } else {
                     await axios.delete(`${SERVER_URL}/reports/${reportId}?action=delete`);
                 }
-                setReports(reports.filter((r) => r._id !== reportId && r.recipeId !== recipeId));
-                if (selectedReport?._id === reportId) setSelectedReport(null);
+                setReports((prev) => prev.filter((r) => r._id !== reportId && r.recipeId !== recipeId));
+                if (selectedReport?._id === reportId || selectedReport?.recipeId === recipeId) {
+                    setSelectedReport(null);
+                }
                 toast.success("Recipe and related reports removed!");
                 fetchReports();
             } catch (err) {
@@ -73,29 +84,31 @@ const AdminReports = () => {
         }
     };
 
-    // Handle Dismiss Report (Recipe stays safe)
-    const handleDismissReport = async (reportId, recipeName) => {
+    // Handle Dismiss Report Flags for a Recipe
+    const handleDismissReport = async (reportId, recipeId, recipeName) => {
         const confirm = await Swal.fire({
-            title: "Dismiss Report Flag?",
-            text: `Dismiss this flag? The recipe "${recipeName || 'selected recipe'}" will remain published and safe.`,
+            title: "Dismiss All Report Flags?",
+            text: `Dismiss all report flags for "${recipeName || 'selected recipe'}"? The recipe will remain active and safe on RecipeHub.`,
             icon: "info",
             showCancelButton: true,
             confirmButtonColor: "#10b981",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, Dismiss Flag",
+            confirmButtonText: "Yes, Dismiss All Flags",
             cancelButtonText: "Cancel",
         });
 
         if (confirm.isConfirmed) {
             try {
-                await axios.delete(`${SERVER_URL}/admin/reports/${reportId}`);
-                setReports(reports.filter((r) => r._id !== reportId));
-                if (selectedReport?._id === reportId) setSelectedReport(null);
-                toast.success("Report flag dismissed! Recipe remains active.");
+                await axios.delete(`${SERVER_URL}/admin/reports/${reportId}?recipeId=${encodeURIComponent(recipeId || '')}`);
+                setReports((prev) => prev.filter((r) => r._id !== reportId && r.recipeId !== recipeId));
+                if (selectedReport?._id === reportId || selectedReport?.recipeId === recipeId) {
+                    setSelectedReport(null);
+                }
+                toast.success("Report flags dismissed! Recipe remains active.");
                 fetchReports();
             } catch (err) {
                 console.error("Dismiss failed:", err);
-                toast.error("Failed to dismiss report!");
+                toast.error("Failed to dismiss report flags!");
             }
         }
     };
@@ -120,11 +133,11 @@ const AdminReports = () => {
                 <div>
                     <h1 className="text-2xl font-black text-base-content tracking-tight">Community Recipe Reports</h1>
                     <p className="text-xs text-base-content/60 font-medium mt-1">
-                        Review reported content, view individual report details, or dismiss false flags.
+                        Review reported content grouped by recipe, view detailed report submissions, or dismiss false flags.
                     </p>
                 </div>
                 <div className="badge badge-error gap-1.5 font-bold p-3 text-white shadow-sm">
-                    <FaFlag className="text-xs" /> Total Reports: {totalReports}
+                    <FaFlag className="text-xs" /> Reported Recipes: {totalReports}
                 </div>
             </div>
 
@@ -134,7 +147,7 @@ const AdminReports = () => {
                     <thead className="bg-base-200/70 text-base-content/70 font-black uppercase text-[10px] tracking-wider border-b border-base-300">
                         <tr>
                             <th className="py-3.5 pl-5">Target Recipe</th>
-                            <th className="py-3.5">Reporter Email</th>
+                            <th className="py-3.5">Reporter Summary</th>
                             <th className="py-3.5">Primary Reason</th>
                             <th className="py-3.5 text-center pr-5">Moderation Actions</th>
                         </tr>
@@ -144,7 +157,7 @@ const AdminReports = () => {
                             <tr>
                                 <td colSpan="4" className="text-center py-12 text-base-content/50">
                                     <FaCheck className="w-8 h-8 mx-auto mb-2 text-success opacity-80" />
-                                    <p className="font-bold text-sm">No Pending Reports</p>
+                                    <p className="font-bold text-sm">No Pending Recipe Flags</p>
                                     <span className="text-xs opacity-60">All community submissions are clear!</span>
                                 </td>
                             </tr>
@@ -153,10 +166,10 @@ const AdminReports = () => {
                                 const target = report.recipeInfo || report.recipeDetails;
                                 const recipeName = target?.recipeName || report.recipeName || "Recipe Details N/A";
                                 const recipeImage = target?.image || target?.recipeImage;
-                                const perRecipeCount = report.recipeReportCount || 1;
+                                const perRecipeCount = report.recipeReportCount || (Array.isArray(report.allRecipeReports) ? report.allRecipeReports.length : 1);
 
                                 return (
-                                    <tr key={report._id} className="hover:bg-base-200/40 border-b border-base-200/50">
+                                    <tr key={report._id || report.recipeId} className="hover:bg-base-200/40 border-b border-base-200/50">
                                         <td className="py-3.5 pl-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-base-200 flex items-center justify-center overflow-hidden shrink-0 border border-base-300/60">
@@ -170,7 +183,7 @@ const AdminReports = () => {
                                                     <span className="font-bold text-sm block text-base-content">{recipeName}</span>
                                                     <div className="flex items-center gap-2 mt-0.5">
                                                         <span className="text-[10px] font-mono text-base-content/50">ID: {report.recipeId}</span>
-                                                        <span className="badge badge-error/10 text-error border border-error/20 font-black text-[10px] px-2 py-0.5 inline-flex items-center gap-1">
+                                                        <span className="badge badge-error font-black text-[10px] px-2 py-0.5 inline-flex items-center gap-1 shadow-xs text-white">
                                                             <FaFlag className="text-[9px]" /> {perRecipeCount} {perRecipeCount === 1 ? "Report" : "Reports"}
                                                         </span>
                                                     </div>
@@ -180,11 +193,18 @@ const AdminReports = () => {
                                         <td className="py-3.5 font-mono text-xs text-base-content/80">
                                             <div className="flex items-center gap-1.5">
                                                 <FaUser className="text-[10px] opacity-40" />
-                                                <span>{report.reporterEmail}</span>
+                                                <span>
+                                                    {report.reporterEmail || "Anonymous"}
+                                                    {perRecipeCount > 1 && (
+                                                        <span className="badge badge-sm badge-ghost text-[10px] ml-1.5 font-sans font-bold text-base-content/70">
+                                                            +{perRecipeCount - 1} more
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="py-3.5">
-                                            <span className="badge badge-warning/20 text-warning-content border-warning/30 font-bold text-xs p-2">
+                                            <span className="badge badge-warning/20 text-warning-content border border-warning/30 font-bold text-xs p-2">
                                                 {report.reason || "Content Flag"}
                                             </span>
                                         </td>
@@ -193,7 +213,7 @@ const AdminReports = () => {
                                                 <button
                                                     onClick={() => setSelectedReport(report)}
                                                     className="btn btn-neutral btn-xs text-white font-bold gap-1 rounded-lg px-2.5 py-1.5 h-auto min-h-0 shadow-xs"
-                                                    title="View detailed report list"
+                                                    title="View all detailed report submissions for this recipe"
                                                 >
                                                     <FaEye className="text-[10px]" /> View Details
                                                 </button>
@@ -207,9 +227,9 @@ const AdminReports = () => {
                                                 </button>
 
                                                 <button
-                                                    onClick={() => handleDismissReport(report._id, recipeName)}
+                                                    onClick={() => handleDismissReport(report._id, report.recipeId, recipeName)}
                                                     className="btn btn-success btn-xs text-white font-bold gap-1 rounded-lg px-2.5 py-1.5 h-auto min-h-0 shadow-xs"
-                                                    title="Dismiss flag and keep recipe active"
+                                                    title="Dismiss all flags for this recipe and keep it active"
                                                 >
                                                     <FaCheck className="text-[10px]" /> Dismiss
                                                 </button>
@@ -248,7 +268,7 @@ const AdminReports = () => {
                                     <FaTriangleExclamation className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-black tracking-tight">Report Log Details</h3>
+                                    <h3 className="text-lg font-black tracking-tight">Recipe Reports Breakdown</h3>
                                     <p className="text-xs text-base-content/60 font-medium">
                                         Recipe ID: <span className="font-mono">{selectedReport.recipeId}</span>
                                     </p>
@@ -265,7 +285,7 @@ const AdminReports = () => {
                         {/* Modal Body */}
                         <div className="p-6 overflow-y-auto space-y-6 flex-1">
                             
-                            {/* Target Recipe Summary */}
+                            {/* Target Recipe Summary Card */}
                             <div className="flex items-center gap-4 bg-base-200/40 p-4 rounded-2xl border border-base-300/60">
                                 <div className="w-14 h-14 rounded-xl bg-base-300 overflow-hidden shrink-0 border border-base-300">
                                     {(selectedReport.recipeInfo?.image || selectedReport.recipeInfo?.recipeImage) ? (
@@ -289,18 +309,18 @@ const AdminReports = () => {
                                     </p>
                                 </div>
                                 <div className="badge badge-error gap-1 font-black text-white text-xs px-3 py-2 shadow-xs">
-                                    <FaFlag className="text-[10px]" /> {selectedReport.recipeReportCount || 1} Total {selectedReport.recipeReportCount === 1 ? "Report" : "Reports"}
+                                    <FaFlag className="text-[10px]" /> {selectedReport.recipeReportCount || (Array.isArray(selectedReport.allRecipeReports) ? selectedReport.allRecipeReports.length : 1)} Total {((selectedReport.recipeReportCount || 1) === 1) ? "Report" : "Reports"}
                                 </div>
                             </div>
 
                             {/* Reports Submissions Breakdown */}
                             <div className="space-y-3">
                                 <h5 className="font-extrabold text-sm text-base-content tracking-tight uppercase text-[11px] opacity-70">
-                                    Report Submissions History ({selectedReport.recipeAllReports?.length || 1})
+                                    Report Submissions History ({Array.isArray(selectedReport.allRecipeReports) ? selectedReport.allRecipeReports.length : 1})
                                 </h5>
 
-                                {Array.isArray(selectedReport.recipeAllReports) && selectedReport.recipeAllReports.length > 0 ? (
-                                    selectedReport.recipeAllReports.map((entry, idx) => (
+                                {Array.isArray(selectedReport.allRecipeReports) && selectedReport.allRecipeReports.length > 0 ? (
+                                    selectedReport.allRecipeReports.map((entry, idx) => (
                                         <div key={entry._id || idx} className="bg-base-200/50 p-4 rounded-2xl border border-base-300/60 space-y-2">
                                             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 border-b border-base-300/40 pb-2">
                                                 <div className="flex items-center gap-2">
@@ -309,7 +329,7 @@ const AdminReports = () => {
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="badge badge-warning/20 text-warning-content border-warning/30 font-bold text-[11px] px-2.5 py-1">
+                                                    <span className="badge badge-warning/20 text-warning-content border border-warning/30 font-bold text-[11px] px-2.5 py-1">
                                                         {entry.reason || "Content Flag"}
                                                     </span>
                                                     <span className="text-[10px] opacity-50 flex items-center gap-1">
@@ -335,7 +355,7 @@ const AdminReports = () => {
                                             <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
                                                 <FaUser className="text-[10px] opacity-60" /> {selectedReport.reporterEmail || "Anonymous"}
                                             </span>
-                                            <span className="badge badge-warning/20 text-warning-content border-warning/30 font-bold text-[11px] px-2.5 py-1">
+                                            <span className="badge badge-warning/20 text-warning-content border border-warning/30 font-bold text-[11px] px-2.5 py-1">
                                                 {selectedReport.reason || "Content Flag"}
                                             </span>
                                         </div>
@@ -365,10 +385,10 @@ const AdminReports = () => {
                                 <FaTrash className="text-xs" /> Delete Recipe Completely
                             </button>
                             <button
-                                onClick={() => handleDismissReport(selectedReport._id, selectedReport.recipeInfo?.recipeName || selectedReport.recipeName)}
+                                onClick={() => handleDismissReport(selectedReport._id, selectedReport.recipeId, selectedReport.recipeInfo?.recipeName || selectedReport.recipeName)}
                                 className="btn btn-success btn-sm text-white font-bold rounded-xl normal-case gap-1.5 shadow-sm"
                             >
-                                <FaCheck className="text-xs" /> Dismiss Report Flag
+                                <FaCheck className="text-xs" /> Dismiss All Flags
                             </button>
                         </div>
                     </div>
