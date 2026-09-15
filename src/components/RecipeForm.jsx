@@ -9,7 +9,26 @@ const RecipeForm = ({
   setImageFile,
   handleSubmit,
   uploading,
+  disabled = false,
 }) => {
+  const [commissionRate, setCommissionRate] = React.useState(20);
+  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+  React.useEffect(() => {
+    fetch(`${SERVER_URL}/pricing-plans`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.commissionRate !== undefined) {
+          setCommissionRate(data.commissionRate);
+        }
+      })
+      .catch((err) => console.error("Error fetching commission rate:", err));
+  }, [SERVER_URL]);
+
+  const priceVal = Number(formData.price) || 0;
+  const creatorPercentage = Math.max(0, 100 - commissionRate);
+  const creatorAmount = (priceVal * (creatorPercentage / 100)).toFixed(2);
+  const platformAmount = (priceVal * (commissionRate / 100)).toFixed(2);
   return (
     <form onSubmit={handleSubmit} className="space-y-4 bg-base-200/40 p-6 rounded-2xl border border-base-300/40">
       {/* Recipe Name */}
@@ -18,6 +37,7 @@ const RecipeForm = ({
         <input
           type="text"
           required
+          disabled={disabled}
           placeholder="e.g., Grilled Chicken"
           className="input input-bordered w-full"
           value={formData.recipeName}
@@ -32,6 +52,7 @@ const RecipeForm = ({
           type="file"
           accept="image/*"
           required
+          disabled={disabled}
           className="file-input file-input-bordered file-input-primary w-full"
           onChange={(e) => setImageFile(e.target.files[0])}
         />
@@ -42,6 +63,7 @@ const RecipeForm = ({
         <div>
           <label className="label font-bold text-xs">Category</label>
           <select
+            disabled={disabled}
             className="select select-bordered w-full"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -57,6 +79,7 @@ const RecipeForm = ({
           <input
             type="text"
             required
+            disabled={disabled}
             placeholder="e.g., Italian, Mexican"
             className="input input-bordered w-full"
             value={formData.cuisineType}
@@ -70,6 +93,7 @@ const RecipeForm = ({
         <div>
           <label className="label font-bold text-xs">Difficulty Level</label>
           <select
+            disabled={disabled}
             className="select select-bordered w-full"
             value={formData.difficultyLevel}
             onChange={(e) => setFormData({ ...formData, difficultyLevel: e.target.value })}
@@ -84,6 +108,7 @@ const RecipeForm = ({
           <input
             type="text"
             required
+            disabled={disabled}
             placeholder="e.g., 25 mins"
             className="input input-bordered w-full"
             value={formData.preparationTime}
@@ -107,6 +132,7 @@ const RecipeForm = ({
             <input
               type="radio"
               name="recipePricing"
+              disabled={disabled}
               checked={!formData.isPaid}
               onChange={() => setFormData({ ...formData, isPaid: false, price: 0 })}
               className="radio radio-primary radio-sm"
@@ -125,6 +151,7 @@ const RecipeForm = ({
             <input
               type="radio"
               name="recipePricing"
+              disabled={disabled}
               checked={formData.isPaid}
               onChange={() => setFormData({ ...formData, isPaid: true, price: formData.price > 0 ? formData.price : 4.99 })}
               className="radio radio-warning radio-sm"
@@ -141,7 +168,7 @@ const RecipeForm = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="label font-bold text-xs py-0">Price in USD ($)</label>
               <span className="text-[11px] font-semibold text-emerald-600">
-                You receive 80% (${((Number(formData.price) || 0) * 0.8).toFixed(2)}) per purchase
+                You receive {creatorPercentage}% (${creatorAmount}) per purchase
               </span>
             </div>
             <div className="relative">
@@ -151,6 +178,7 @@ const RecipeForm = ({
                 step="0.01"
                 min="0.99"
                 max="99.99"
+                disabled={disabled}
                 required={formData.isPaid}
                 placeholder="4.99"
                 className="input input-bordered w-full pl-8 font-bold text-sm"
@@ -159,7 +187,7 @@ const RecipeForm = ({
               />
             </div>
             <p className="text-[10px] text-base-content/60">
-              Platform fee: 20% (${((Number(formData.price) || 0) * 0.2).toFixed(2)}). Buyers get lifetime access.
+              Platform fee: {commissionRate}% (${platformAmount}). Buyers get lifetime access.
             </p>
           </div>
         )}
@@ -171,6 +199,7 @@ const RecipeForm = ({
         <input
           type="text"
           required
+          disabled={disabled}
           placeholder="Chicken, Garlic, Olive Oil, Pepper"
           className="input input-bordered w-full"
           value={formData.ingredients}
@@ -183,6 +212,7 @@ const RecipeForm = ({
         <label className="label font-bold text-xs">Instructions</label>
         <textarea
           required
+          disabled={disabled}
           placeholder="Step 1. Marinate the chicken... Step 2. Grill for 15 mins..."
           className="textarea textarea-bordered w-full h-28"
           value={formData.instructions}
@@ -193,14 +223,18 @@ const RecipeForm = ({
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={uploading}
-        className="btn btn-primary w-full rounded-xl text-white font-bold normal-case"
+        disabled={uploading || disabled}
+        className={`btn w-full rounded-xl font-bold normal-case ${
+          disabled ? "btn-disabled opacity-60" : "btn-primary text-white"
+        }`}
       >
         {uploading ? (
           <div className="flex items-center justify-center gap-2">
             <HashLoader color="#ffffff" size={16} />
             <span>Publishing Recipe...</span>
           </div>
+        ) : disabled ? (
+          "Upload Limit Reached (Max 2 Free Recipes)"
         ) : (
           "Publish Recipe Live"
         )}

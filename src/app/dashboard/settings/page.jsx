@@ -4,9 +4,12 @@ import React, { useState, useEffect } from "react";
 import { FaPercent, FaFloppyDisk, FaRotateLeft, FaCoins, FaUserGear, FaShieldHalved, FaChartLine } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import { HashLoader } from "react-spinners";
-
 const AdminSettingsPage = () => {
   const [commissionRate, setCommissionRate] = useState(20);
+  const [proFoodiePrice, setProFoodiePrice] = useState(9.99);
+  const [masterChefPrice, setMasterChefPrice] = useState(19.99);
+  const [proFoodieDesc, setProFoodieDesc] = useState("Perfect for home cooks wanting unlimited recipe access and meal planning tools.");
+  const [masterChefDesc, setMasterChefDesc] = useState("Designed for culinary enthusiasts & professional chefs wanting maximum tools.");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -14,7 +17,7 @@ const AdminSettingsPage = () => {
 
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  // Fetch current commission rate from server
+  // Fetch current commission rate and plan pricing from server
   const fetchSettings = async () => {
     try {
       setLoading(true);
@@ -22,6 +25,10 @@ const AdminSettingsPage = () => {
       const data = await res.json();
       if (data.success && data.settings) {
         setCommissionRate(data.settings.commissionRate !== undefined ? data.settings.commissionRate : 20);
+        setProFoodiePrice(data.settings.proFoodiePrice !== undefined ? data.settings.proFoodiePrice : 9.99);
+        setMasterChefPrice(data.settings.masterChefPrice !== undefined ? data.settings.masterChefPrice : 19.99);
+        if (data.settings.proFoodieDesc) setProFoodieDesc(data.settings.proFoodieDesc);
+        if (data.settings.masterChefDesc) setMasterChefDesc(data.settings.masterChefDesc);
         setLastUpdated(data.settings.updatedAt);
         setUpdatedBy(data.settings.updatedBy || "admin");
       }
@@ -37,29 +44,43 @@ const AdminSettingsPage = () => {
     fetchSettings();
   }, []);
 
-  // Save updated commission rate to server
+  // Save updated settings to server
   const handleSaveSettings = async () => {
     const rate = Number(commissionRate);
     if (isNaN(rate) || rate < 0 || rate > 100) {
       return toast.error("Commission rate must be between 0% and 100%");
     }
+    if (isNaN(Number(proFoodiePrice)) || Number(proFoodiePrice) < 0) {
+      return toast.error("Pro Foodie price must be a valid positive number");
+    }
+    if (isNaN(Number(masterChefPrice)) || Number(masterChefPrice) < 0) {
+      return toast.error("Master Chef price must be a valid positive number");
+    }
 
     setSaving(true);
-    const toastId = toast.loading("Saving new commission rate...");
+    const toastId = toast.loading("Saving platform settings...");
 
     try {
       const res = await fetch(`${SERVER_URL}/admin/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ commissionRate: rate }),
+        body: JSON.stringify({
+          commissionRate: rate,
+          proFoodiePrice: Number(proFoodiePrice),
+          masterChefPrice: Number(masterChefPrice),
+          proFoodieDesc,
+          masterChefDesc,
+        }),
       });
       const data = await res.json();
 
       if (data.success) {
         toast.dismiss(toastId);
-        toast.success(data.message || `Global commission set to ${rate}%!`);
+        toast.success(data.message || "Platform settings updated successfully!");
         if (data.settings) {
           setCommissionRate(data.settings.commissionRate);
+          setProFoodiePrice(data.settings.proFoodiePrice);
+          setMasterChefPrice(data.settings.masterChefPrice);
           setLastUpdated(data.settings.updatedAt);
           setUpdatedBy(data.settings.updatedBy || "admin");
         }
@@ -182,8 +203,67 @@ const AdminSettingsPage = () => {
             </div>
           </div>
 
+          {/* Membership Pricing Settings */}
+          <div className="border-t border-base-200 pt-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-secondary/10 text-secondary rounded-2xl">
+                <FaCoins className="text-xl" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-lg text-base-content">Membership Plan Dynamic Pricing</h3>
+                <p className="text-xs opacity-60 font-medium">Control subscription pricing displayed on the Pricing page</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pro Foodie Plan Price */}
+              <div className="bg-base-200/40 p-4 rounded-2xl border border-base-300/40 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider text-base-content/80">
+                    Pro Foodie Plan ($/mo)
+                  </span>
+                  <span className="badge badge-secondary badge-sm font-bold">Monthly</span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-sm font-bold text-base-content/50">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={proFoodiePrice}
+                    onChange={(e) => setProFoodiePrice(e.target.value)}
+                    className="input input-bordered input-sm w-full pl-7 font-mono font-bold text-base-content"
+                    placeholder="9.99"
+                  />
+                </div>
+              </div>
+
+              {/* Master Chef Plan Price */}
+              <div className="bg-base-200/40 p-4 rounded-2xl border border-base-300/40 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider text-base-content/80">
+                    Master Chef Plan ($/mo)
+                  </span>
+                  <span className="badge badge-accent badge-sm font-bold">Monthly</span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-sm font-bold text-base-content/50">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={masterChefPrice}
+                    onChange={(e) => setMasterChefPrice(e.target.value)}
+                    className="input input-bordered input-sm w-full pl-7 font-mono font-bold text-base-content"
+                    placeholder="19.99"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-2 border-t border-base-200">
             <button
               onClick={fetchSettings}
               className="btn btn-ghost btn-sm rounded-xl font-bold normal-case gap-2 text-base-content/70"
@@ -197,7 +277,7 @@ const AdminSettingsPage = () => {
               className="btn btn-primary rounded-xl font-black text-white normal-case gap-2 shadow-lg shadow-primary/20 hover:scale-102 transition-transform px-6"
             >
               <FaFloppyDisk className="text-sm" />
-              <span>{saving ? "Saving..." : "Save Commission Settings"}</span>
+              <span>{saving ? "Saving..." : "Save Platform Settings"}</span>
             </button>
           </div>
         </div>

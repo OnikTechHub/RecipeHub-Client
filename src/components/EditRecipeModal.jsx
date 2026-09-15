@@ -9,6 +9,19 @@ const EditRecipeModal = ({ recipe, onClose, onUpdate }) => {
     const [prepTime, setPrepTime] = useState("");
     const [isPaid, setIsPaid] = useState(false);
     const [price, setPrice] = useState(0);
+    const [commissionRate, setCommissionRate] = useState(20);
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+    useEffect(() => {
+        fetch(`${SERVER_URL}/pricing-plans`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.commissionRate !== undefined) {
+                    setCommissionRate(data.commissionRate);
+                }
+            })
+            .catch((err) => console.error("Error fetching commission rate:", err));
+    }, [SERVER_URL]);
 
     useEffect(() => {
         if (recipe) {
@@ -42,8 +55,9 @@ const EditRecipeModal = ({ recipe, onClose, onUpdate }) => {
     if (!recipe) return null;
 
     const numPrice = Number(price) || 0;
-    const creatorShare = (numPrice * 0.8).toFixed(2);
-    const platformShare = (numPrice * 0.2).toFixed(2);
+    const creatorPercentage = Math.max(0, 100 - commissionRate);
+    const creatorShare = (numPrice * (creatorPercentage / 100)).toFixed(2);
+    const platformShare = (numPrice * (commissionRate / 100)).toFixed(2);
 
     return (
         <dialog id="edit_recipe_modal" className="modal modal-open items-center justify-center p-3 sm:p-4 z-50 backdrop-blur-xs">
@@ -191,7 +205,7 @@ const EditRecipeModal = ({ recipe, onClose, onUpdate }) => {
                                         Price in USD ($)
                                     </label>
                                     <span className="text-[11px] font-semibold text-emerald-600">
-                                        Creator receives 80% (${creatorShare}) per sale
+                                        Creator receives {creatorPercentage}% (${creatorShare}) per sale
                                     </span>
                                 </div>
 

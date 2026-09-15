@@ -63,13 +63,16 @@ export default function DashboardLayout({ children }) {
   if (!session) return null;
 
   const currentUser = session.user;
+  const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase().trim() : "";
+  const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase().trim() : "";
   const isAdmin =
-    liveRole === "admin" ||
-    currentUser?.role === "admin" ||
-    currentUser?.email === "admin@recipehub.com" ||
-    currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    Boolean(currentUser?.email) &&
+    (liveRole === "admin" ||
+     currentUser?.role === "admin" ||
+     userEmailLower === "admin@recipehub.com" ||
+     (Boolean(adminEmailEnv) && userEmailLower === adminEmailEnv));
 
-  const isPremium = liveIsPremium || currentUser?.isPremium === true;
+  const isPremium = liveIsPremium || currentUser?.isPremium === true || isAdmin;
 
   const isActive = (path) => pathname === path ? "bg-primary text-white font-bold" : "hover:bg-base-300 opacity-80";
 

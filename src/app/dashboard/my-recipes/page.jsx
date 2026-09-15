@@ -30,8 +30,21 @@ const MyRecipesPage = () => {
     const [updateLoading, setUpdateLoading] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
+    const [commissionRate, setCommissionRate] = useState(20);
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
     const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+    useEffect(() => {
+        if (!SERVER_URL) return;
+        fetch(`${SERVER_URL}/pricing-plans`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.commissionRate !== undefined) {
+                    setCommissionRate(data.commissionRate);
+                }
+            })
+            .catch((err) => console.error("Error fetching commission rate:", err));
+    }, [SERVER_URL]);
 
     // Fetch Data by Email with Pagination and LIFO
     useEffect(() => {
@@ -444,7 +457,7 @@ const MyRecipesPage = () => {
                                                 Price in USD ($)
                                             </label>
                                             <span className="text-[11px] font-semibold text-emerald-600">
-                                                You receive 80% (${((Number(selectedRecipe.price) || 0) * 0.8).toFixed(2)}) per purchase
+                                                You receive {Math.max(0, 100 - commissionRate)}% (${((Number(selectedRecipe.price) || 0) * (Math.max(0, 100 - commissionRate) / 100)).toFixed(2)}) per purchase
                                             </span>
                                         </div>
 

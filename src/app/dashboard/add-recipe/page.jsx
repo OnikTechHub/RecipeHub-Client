@@ -29,6 +29,8 @@ const AddRecipePage = () => {
     const [userRecipesCount, setUserRecipesCount] = useState(0);
     const [isPremium, setIsPremium] = useState(false);
 
+    const [userRole, setUserRole] = useState("user");
+
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
@@ -38,7 +40,10 @@ const AddRecipePage = () => {
                 const userRes = await fetch(`${SERVER_URL}/users/${currentUserEmail}`);
                 const userData = await userRes.json();
                 if (userData.success) {
-                    setIsPremium(userData.data?.isPremium || false);
+                    const role = userData.data?.role || "user";
+                    setUserRole(role);
+                    const isPrem = userData.data?.isPremium || role === "admin" || role === "premium";
+                    setIsPremium(isPrem);
                 }
 
                 const recipesRes = await fetch(`${SERVER_URL}/recipes-count?email=${currentUserEmail}`);
@@ -92,9 +97,8 @@ const AddRecipePage = () => {
             return;
         }
 
-        
-        if (!isPremium && userRecipesCount >= 2) {
-            toast.error("Standard accounts have a 2-recipe limit! Redirecting to buy Premium...", {
+        if (!isPremium && userRole !== "admin" && userRecipesCount >= 2) {
+            toast.error("Free plan recipe upload limit reached (Max 2 recipes). Upgrade to Pro to add unlimited recipes!", {
                 duration: 4000,
                 style: {
                     background: "#EF4444",
@@ -104,8 +108,8 @@ const AddRecipePage = () => {
             });
 
             setTimeout(() => {
-                router.push("/dashboard"); 
-            }, 2000);
+                router.push("/pricing"); 
+            }, 1800);
 
             return;
         }
@@ -172,7 +176,14 @@ const AddRecipePage = () => {
                 }, 1500);
 
             } else {
-                toast.error(data.message || "Failed to add recipe.", { id: loadingToast });
+                if (data.limitReached) {
+                    toast.error(data.message || "Recipe creation limit reached! Redirecting to pricing plans...", { id: loadingToast });
+                    setTimeout(() => {
+                        router.push("/pricing");
+                    }, 2000);
+                } else {
+                    toast.error(data.message || "Failed to add recipe.", { id: loadingToast });
+                }
             }
         } catch (error) {
             console.error("Error adding recipe:", error);
@@ -191,6 +202,8 @@ const AddRecipePage = () => {
         );
     }
 
+    const limitReached = !isPremium && userRole !== "admin" && userRecipesCount >= 2;
+
     return (
         <div className="min-h-screen bg-base-100 p-6 max-w-2xl mx-auto text-base-content">
             <Toaster position="top-center" reverseOrder={false} />
@@ -198,10 +211,25 @@ const AddRecipePage = () => {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black">Add a New Recipe</h2>
 
-                <span className={`badge ${isPremium ? "badge-warning" : "badge-neutral"} p-3 font-bold`}>
-                    {isPremium ? "Pro Unlimited" : `Slot Used: ${userRecipesCount}/2`}
+                <span className={`badge ${isPremium || userRole === "admin" ? "badge-warning" : "badge-neutral"} p-3 font-bold`}>
+                    {isPremium || userRole === "admin" ? "Pro Unlimited" : `Slot Used: ${userRecipesCount}/2`}
                 </span>
             </div>
+
+            {limitReached && (
+                <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-xs text-amber-600 dark:text-amber-400">
+                        <strong className="font-extrabold text-sm block mb-1">Free Upload Limit Reached (2/2)</strong>
+                        Standard free accounts can post up to 2 recipes. Upgrade to Pro Foodie or Master Chef to publish unlimited recipes!
+                    </div>
+                    <button
+                        onClick={() => router.push("/pricing")}
+                        className="btn btn-warning btn-sm font-black rounded-xl text-neutral shrink-0"
+                    >
+                        Upgrade to Pro
+                    </button>
+                </div>
+            )}
 
             <RecipeForm 
               formData={formData}
@@ -209,6 +237,7 @@ const AddRecipePage = () => {
               setImageFile={setImageFile}
               handleSubmit={handleSubmit}
               uploading={uploading}
+              disabled={limitReached}
             />
         </div>
     );

@@ -17,30 +17,42 @@ export const CartProvider = ({ children }) => {
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const [liveRole, setLiveRole] = useState(null);
+  const [isLivePremium, setIsLivePremium] = useState(false);
 
-  // Fetch live role from backend to catch role updates (e.g. promoted to admin)
+  // Real-time synchronization of user session with backend MongoDB user document
   useEffect(() => {
     if (!currentUser?.email) {
       setLiveRole(null);
+      setIsLivePremium(false);
       return;
     }
-    fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(currentUser.email)}`)
+    fetch(`${SERVER_URL}/users/${encodeURIComponent(currentUser.email)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          setLiveRole(data.data.role);
+          setLiveRole(data.data.role || "user");
+          setIsLivePremium(Boolean(data.data.isPremium || data.data.role === "admin" || data.data.role === "premium"));
         }
       })
-      .catch((err) => console.error("Error checking live role in CartContext:", err));
+      .catch((err) => console.error("Error syncing user session in CartContext:", err));
   }, [currentUser?.email, SERVER_URL]);
 
-  const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
-  const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
+  const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase().trim() : "";
+  const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase().trim() : "";
+  
   const isAdmin =
-    liveRole === "admin" ||
-    currentUser?.role === "admin" ||
-    userEmailLower === "admin@recipehub.com" ||
-    (adminEmailEnv && userEmailLower === adminEmailEnv);
+    Boolean(currentUser?.email) &&
+    (liveRole === "admin" ||
+     currentUser?.role === "admin" ||
+     userEmailLower === "admin@recipehub.com" ||
+     (Boolean(adminEmailEnv) && userEmailLower === adminEmailEnv));
+
+  const isPremiumUser =
+    Boolean(currentUser?.email) &&
+    (isLivePremium ||
+     currentUser?.isPremium === true ||
+     currentUser?.role === "premium" ||
+     isAdmin);
 
   // Load local storage cart on mount
   useEffect(() => {
@@ -234,6 +246,7 @@ export const CartProvider = ({ children }) => {
         loadingCheckout,
         fetchPurchasedIds,
         isAdmin,
+        isPremiumUser,
         liveRole,
       }}
     >
