@@ -87,8 +87,11 @@ const PopularRecipes = () => {
                                             <FaUtensils className="text-4xl opacity-20" />
                                         </div>
                                     )}
-                                    <div className="absolute top-3 right-3 bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
-                                        <FaHeart className="text-[9px]" /> Trending
+                                    {/* Top Right Badge */}
+                                    <div className={`absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm text-white ${
+                                      recipe.isPaid && Number(recipe.price || 0) > 0 ? "bg-amber-500" : "bg-emerald-500"
+                                    }`}>
+                                        {recipe.isPaid && Number(recipe.price || 0) > 0 ? "PREMIUM" : "FREE"}
                                     </div>
                                 </div>
 
@@ -100,10 +103,20 @@ const PopularRecipes = () => {
                                             {recipe.recipeName}
                                         </h3>
 
-                                        {/* 2. Author Name */}
-                                        <div className="flex items-center gap-2 text-xs opacity-70 font-semibold pt-1">
-                                            <FaUser className="text-rose-500/80 text-[11px]" />
-                                            <span className="truncate">By {recipe.authorName || "Anonymous"}</span>
+                                        {/* 2. Author Name & Price Tag */}
+                                        <div className="flex items-center justify-between text-xs font-semibold pt-1">
+                                            <div className="flex items-center gap-1.5 opacity-70">
+                                                <FaUser className="text-rose-500/80 text-[11px]" />
+                                                <span className="truncate">By {recipe.authorName || "Anonymous"}</span>
+                                            </div>
+
+                                            <span className={`px-2 py-0.5 rounded-md font-black text-[11px] border ${
+                                              recipe.isPaid && Number(recipe.price || 0) > 0
+                                                ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                            }`}>
+                                              {recipe.isPaid && Number(recipe.price || 0) > 0 ? `$${Number(recipe.price).toFixed(2)}` : "Free"}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -113,7 +126,7 @@ const PopularRecipes = () => {
                                         <div className="flex items-center justify-between bg-base-300/40 px-3 py-2 rounded-xl border border-base-300/50">
                                             <span className="text-[11px] font-bold opacity-60 uppercase tracking-wider">Community Likes</span>
                                             <div className="flex items-center gap-1.5 text-xs font-black text-rose-500">
-                                                <FaHeart className="animate-bounce" />
+                                                <FaHeart className="animate-pulse" />
                                                 <span>{recipe.likesCount || 0} Likes</span>
                                             </div>
                                         </div>

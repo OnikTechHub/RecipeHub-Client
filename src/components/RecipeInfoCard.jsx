@@ -39,16 +39,21 @@ const RecipeInfoCard = ({
           alt={recipe.recipeName}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        {/* Pricing Badge */}
+        {/* Pricing Badge at Top Right */}
         {isPaid ? (
           <span className="absolute top-4 right-4 px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-amber-500 text-white shadow-lg flex items-center gap-1.5 tracking-wider backdrop-blur-md">
-            <FaCrown className="text-xs" /> Premium • ${Number(recipe.price).toFixed(2)}
+            <FaCrown className="text-xs" /> PREMIUM
           </span>
         ) : (
           <span className="absolute top-4 right-4 px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-emerald-500 text-white shadow-lg tracking-wider">
-            Free Recipe
+            FREE
           </span>
         )}
+
+        {/* Price Tag Overlay at Bottom Left */}
+        <div className="absolute bottom-3 left-3 bg-base-900/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-black text-white shadow-md border border-white/10">
+          {isPaid ? `$${Number(recipe.price).toFixed(2)}` : "Free"}
+        </div>
       </div>
 
       {/* Details */}
@@ -73,12 +78,14 @@ const RecipeInfoCard = ({
               {effectiveHasAccess ? (
                 <>
                   <FaLockOpen className="text-[10px]" />{" "}
-                  {accessReason === "admin" || isAdmin
+                  {accessReason === "admin" && isAdmin
                     ? "Admin Full Access"
                     : accessReason === "author"
                     ? "Author Access"
                     : accessReason === "purchased"
                     ? "Lifetime Unlocked"
+                    : accessReason === "premium"
+                    ? "Premium Member Access"
                     : "Full Access"}
                 </>
               ) : (

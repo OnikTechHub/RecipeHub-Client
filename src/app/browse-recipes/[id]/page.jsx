@@ -9,10 +9,12 @@ import {
   FaShieldHalved,
   FaPrint,
   FaShareNodes,
+  FaCrown,
 } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import RecipeInfoCard from "@/components/RecipeInfoCard";
 import ReportModal from "@/components/ReportModal";
+import RecipeReviewSection from "@/components/RecipeReviewSection";
 import { authClient } from "@/lib/auth-client";
 import { HashLoader } from "react-spinners";
 import { useCart } from "@/context/CartContext";
@@ -56,31 +58,30 @@ const RecipeDetailsPage = ({ params }) => {
   const checkAccess = async (recipeObj) => {
     if (!recipeObj) return;
 
-    const isPaidRecipe =
-      recipeObj.recipeType === "Paid" ||
-      recipeObj.isPaid === true ||
-      Number(recipeObj.price || 0) > 0;
-
-    // Free recipe
-    if (!isPaidRecipe) {
-      setHasAccess(true);
-      setAccessReason("free");
+    // 1. Unauthenticated Guest: STRICT LOCK FOR ALL RECIPES
+    if (!currentUserEmail || !currentUserEmail.trim()) {
+      setHasAccess(false);
+      setAccessReason("unauthenticated");
       return;
     }
 
-    // Admin user free global access
-    if (
+    const emailLower = currentUserEmail.toLowerCase().trim();
+    const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase().trim() : "";
+
+    // 2. Genuinely authenticated Admin user (free lifetime access)
+    const isUserAdmin =
       isAdmin ||
       session?.user?.role === "admin" ||
-      currentUserEmail?.toLowerCase() === "admin@recipehub.com" ||
-      currentUserEmail?.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase()
-    ) {
+      emailLower === "admin@recipehub.com" ||
+      (Boolean(adminEmailEnv) && emailLower === adminEmailEnv);
+
+    if (isUserAdmin) {
       setHasAccess(true);
       setAccessReason("admin");
       return;
     }
 
-    // Author / Creator access (Free access to own recipes)
+    // 3. Author / Creator access (Free access to own recipes)
     const authorEmails = [
       recipeObj.authorEmail,
       recipeObj.userEmail,
@@ -91,27 +92,20 @@ const RecipeDetailsPage = ({ params }) => {
       .filter(Boolean)
       .map((e) => e.toString().toLowerCase().trim());
 
-    if (currentUserEmail && authorEmails.includes(currentUserEmail.toLowerCase().trim())) {
+    if (authorEmails.includes(emailLower)) {
       setHasAccess(true);
       setAccessReason("author");
       return;
     }
 
-    // Client-side cart context purchase check
+    // 4. Client-side cart context purchase check
     if (isPurchased && isPurchased(id, recipeObj.authorEmail)) {
       setHasAccess(true);
       setAccessReason("purchased");
       return;
     }
 
-    // Unauthenticated user
-    if (!currentUserEmail) {
-      setHasAccess(false);
-      setAccessReason("unauthenticated");
-      return;
-    }
-
-    // Query backend access endpoint
+    // 5. Query backend access endpoint for strict membership & purchase checks
     try {
       const res = await fetch(
         `${SERVER_URL}/recipes/${id}/access?email=${encodeURIComponent(currentUserEmail)}`
@@ -122,7 +116,7 @@ const RecipeDetailsPage = ({ params }) => {
         setAccessReason(data.reason || "purchased");
       } else {
         setHasAccess(false);
-        setAccessReason("locked");
+        setAccessReason(data.reason || "membership_required");
       }
     } catch (err) {
       console.error("Access verification error:", err);
@@ -171,7 +165,7 @@ const RecipeDetailsPage = ({ params }) => {
     } catch (error) {
       toast.dismiss(toastId);
       console.error("Purchase error:", error);
-      toast.error("Payment integration error!");
+      toast.error(error.message || "Connection error. Please try again.");
     }
   };
 
@@ -373,9 +367,14 @@ const RecipeDetailsPage = ({ params }) => {
                     </p>
                   </div>
 
-                  {(accessReason === "admin" || isAdmin) && (
+                  {(accessReason === "admin" && isAdmin) && (
                     <span className="badge badge-warning gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
                       <FaShieldHalved className="text-[10px]" /> Admin Free Access
+                    </span>
+                  )}
+                  {accessReason === "premium" && (
+                    <span className="badge badge-accent gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
+                      <FaLockOpen className="text-[10px]" /> Premium Member Access
                     </span>
                   )}
                   {accessReason === "purchased" && (
@@ -421,48 +420,98 @@ const RecipeDetailsPage = ({ params }) => {
                 </div>
 
                 <div className="space-y-2 max-w-md">
-                  <span className="badge badge-warning font-black text-[11px] uppercase tracking-wider px-3 py-2">
-                    Premium Secret Recipe
+                  <span className={`badge ${isPaid ? "badge-warning" : "badge-secondary"} font-black text-[11px] uppercase tracking-wider px-3 py-2`}>
+                    {isPaid ? "Premium Secret Recipe" : "Membership Access Required"}
                   </span>
                   <h3 className="text-2xl md:text-3xl font-black tracking-tight text-base-content">
-                    Unlock Full Cooking Instructions
+                    {isPaid ? "Unlock Full Cooking Instructions" : "Upgrade to Premium Membership"}
                   </h3>
                   <p className="text-xs text-base-content/70 leading-relaxed font-medium">
-                    This recipe is a protected premium creation. Unlock complete secret ingredients, exact cooking times, temperatures, and step-by-step master techniques.
+                    {isPaid
+                      ? "This recipe is a protected premium creation. Unlock complete secret ingredients, exact cooking times, temperatures, and step-by-step master techniques."
+                      : "Standard recipes require an active RecipeHub Premium Membership to access full ingredients and step-by-step cooking instructions."}
                   </p>
                 </div>
 
-                {/* Revenue Sharing & Benefits Badge */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg text-left">
-                  <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
-                    <span className="text-[10px] font-black uppercase text-emerald-600 block">80% to Creator</span>
-                    <span className="text-xs font-bold text-base-content block">Support the Chef</span>
+                {/* Benefits Badge */}
+                {isPaid ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg text-left">
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-emerald-600 block">80% to Creator</span>
+                      <span className="text-xs font-bold text-base-content block">Support the Chef</span>
+                    </div>
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-primary block">Lifetime Access</span>
+                      <span className="text-xs font-bold text-base-content block">Always in Library</span>
+                    </div>
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-amber-500 block">Instant Unlock</span>
+                      <span className="text-xs font-bold text-base-content block">Stripe Secure Pay</span>
+                    </div>
                   </div>
-                  <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
-                    <span className="text-[10px] font-black uppercase text-primary block">Lifetime Access</span>
-                    <span className="text-xs font-bold text-base-content block">Always in Library</span>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg text-left">
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-emerald-600 block">Unlimited Access</span>
+                      <span className="text-xs font-bold text-base-content block">All Platform Recipes</span>
+                    </div>
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-primary block">Lifetime Plan</span>
+                      <span className="text-xs font-bold text-base-content block">One-Time Upgrade</span>
+                    </div>
+                    <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
+                      <span className="text-[10px] font-black uppercase text-amber-500 block">Ad-Free Mode</span>
+                      <span className="text-xs font-bold text-base-content block">Clean Cooking View</span>
+                    </div>
                   </div>
-                  <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
-                    <span className="text-[10px] font-black uppercase text-amber-500 block">Instant Unlock</span>
-                    <span className="text-xs font-bold text-base-content block">Stripe Secure Pay</span>
-                  </div>
-                </div>
+                )}
 
-                <button
-                  onClick={handlePurchase}
-                  className="btn btn-primary btn-lg rounded-2xl font-black text-white px-8 normal-case shadow-xl shadow-primary/30 hover:scale-105 transition-transform gap-3"
-                >
-                  <FaCreditCard className="text-base" />
-                  <span>Unlock Recipe Now for ${Number(recipe.price || 5).toFixed(2)}</span>
-                </button>
+                {isPaid ? (
+                  <button
+                    onClick={handlePurchase}
+                    className="btn btn-primary btn-lg rounded-2xl font-black text-white px-8 normal-case shadow-xl shadow-primary/30 hover:scale-105 transition-transform gap-3"
+                  >
+                    <FaCreditCard className="text-base" />
+                    <span>Unlock Recipe Now for ${Number(recipe.price || 5).toFixed(2)}</span>
+                  </button>
+                ) : (
+                  <a
+                    href="/#pricing"
+                    className="btn btn-warning btn-lg rounded-2xl font-black text-neutral px-8 normal-case shadow-xl shadow-warning/30 hover:scale-105 transition-transform gap-3"
+                  >
+                    <FaCrown className="text-base" />
+                    <span>Upgrade to Premium Membership</span>
+                  </a>
+                )}
 
                 <p className="text-[11px] text-base-content/50">
-                  Secured by Stripe with 256-bit encryption. Unlocked recipes are permanently accessible.
+                  {isPaid
+                    ? "Secured by Stripe with 256-bit encryption. Unlocked recipes are permanently accessible."
+                    : "Join thousands of food lovers enjoying unlimited recipe access on RecipeHub."}
                 </p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Reviews & Ratings Section */}
+        <RecipeReviewSection
+          recipeId={recipe._id}
+          reviews={recipe.reviews || []}
+          ratings={recipe.ratings}
+          reviewCount={recipe.reviewCount}
+          currentUser={session?.user}
+          onReviewAdded={(updatedData) => {
+            if (updatedData) {
+              setRecipe((prev) => ({
+                ...prev,
+                ratings: updatedData.ratings,
+                reviewCount: updatedData.reviewCount,
+                reviews: updatedData.reviews,
+              }));
+            }
+          }}
+        />
       </div>
 
       <ReportModal

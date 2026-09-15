@@ -84,9 +84,11 @@ const FeaturedRecipes = () => {
                                             <FaUtensils className="text-4xl opacity-20" />
                                         </div>
                                     )}
-                                    {/* Featured Badge Overlay */}
-                                    <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-                                        Featured
+                                    {/* Top Right Badge */}
+                                    <div className={`absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm text-white ${
+                                      recipe.isPaid && Number(recipe.price || 0) > 0 ? "bg-amber-500" : "bg-emerald-500"
+                                    }`}>
+                                        {recipe.isPaid && Number(recipe.price || 0) > 0 ? "PREMIUM" : "FREE"}
                                     </div>
                                 </div>
 
@@ -98,11 +100,21 @@ const FeaturedRecipes = () => {
                                             {recipe.recipeName}
                                         </h3>
 
-                                        {/* 2. Category Details */}
-                                        <div className="mt-3 flex items-center gap-2 text-xs opacity-70 font-semibold">
-                                            <FaTags className="text-emerald-500 text-[11px]" />
-                                            <span className="truncate">
-                                                {Array.isArray(recipe.category) ? recipe.category.join(", ") : recipe.category || "General"}
+                                        {/* 2. Category Details & Price */}
+                                        <div className="mt-3 flex items-center justify-between text-xs font-semibold">
+                                            <div className="flex items-center gap-1.5 opacity-70">
+                                              <FaTags className="text-emerald-500 text-[11px]" />
+                                              <span className="truncate">
+                                                  {Array.isArray(recipe.category) ? recipe.category[0] : recipe.category || "General"}
+                                              </span>
+                                            </div>
+
+                                            <span className={`px-2 py-0.5 rounded-md font-black text-[11px] border ${
+                                              recipe.isPaid && Number(recipe.price || 0) > 0
+                                                ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                            }`}>
+                                              {recipe.isPaid && Number(recipe.price || 0) > 0 ? `$${Number(recipe.price).toFixed(2)}` : "Free"}
                                             </span>
                                         </div>
                                     </div>
@@ -118,7 +130,7 @@ const FeaturedRecipes = () => {
                                         {/* 4. Preparation Time Parameter */}
                                         <div className="flex items-center gap-1.5 bg-base-300/40 px-2.5 py-1.5 rounded-lg border border-base-300/50">
                                             <FaClock className="text-amber-500 text-[12px] shrink-0" />
-                                            <span className="truncate text-base-content/90">{recipe.prepTime || "N/A"}</span>
+                                            <span className="truncate text-base-content/90">{recipe.prepTime || recipe.preparationTime || "N/A"}</span>
                                         </div>
                                     </div>
                                 </div>

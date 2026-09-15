@@ -356,31 +356,41 @@ const BrowseRecipesContent = () => {
                               : recipe.category || "General"}
                           </span>
 
-                          {/* Free vs Premium vs Unlocked Badge */}
+                          {/* Free vs Premium vs Unlocked Badge Placement at Top Right */}
                           {(owned || isAdmin) && isPaid ? (
-                            <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-600 text-white shadow-md flex items-center gap-1 tracking-wider">
-                              <FaLockOpen className="text-[9px]" /> Unlocked
+                            <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-teal-600 text-white shadow-md flex items-center gap-1 tracking-wider">
+                              <FaLockOpen className="text-[9px]" /> UNLOCKED
                             </span>
                           ) : isPaid ? (
                             <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500 text-white shadow-md flex items-center gap-1 tracking-wider">
-                              <FaCrown className="text-[9px]" /> ${price}
+                              <FaCrown className="text-[9px]" /> PREMIUM
                             </span>
                           ) : (
-                            <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md tracking-wider">
-                              Free
+                            <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md flex items-center gap-1 tracking-wider">
+                              <FaTag className="text-[9px]" /> FREE
                             </span>
                           )}
                         </div>
 
                         <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                           <div>
-                            <div className="flex items-center gap-3 text-xs opacity-60 mb-2 font-medium">
-                              <span className="flex items-center gap-1">
-                                <FaClock className="text-[10px]" />{" "}
-                                {recipe.preparationTime || recipe.prepTime || "N/A"}
-                              </span>
-                              <span className="flex items-center gap-1 text-amber-500">
-                                <FaStar className="text-[10px]" /> {recipe.ratings || 5.0}
+                            <div className="flex items-center justify-between text-xs mb-2 font-semibold">
+                              <div className="flex items-center gap-2 opacity-70">
+                                <span className="flex items-center gap-1">
+                                  <FaClock className="text-[10px] text-primary" />{" "}
+                                  {recipe.preparationTime || recipe.prepTime || "N/A"}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 text-amber-500 font-bold">
+                                  <FaStar className="text-[10px]" /> {recipe.ratings || 5.0} ({recipe.reviewCount || (recipe.reviews ? recipe.reviews.length : 0)})
+                                </span>
+                              </div>
+
+                              {/* Price Tag in Bottom Meta Area */}
+                              <span className={`px-2 py-0.5 rounded-md font-black text-[11px] border ${
+                                isPaid ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                              }`}>
+                                {isPaid ? `$${price}` : "Free"}
                               </span>
                             </div>
                             <h3 className="font-bold text-base text-base-content tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
