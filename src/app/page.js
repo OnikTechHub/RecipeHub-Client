@@ -3,6 +3,7 @@ import TopCategories from "@/components/TopCategories";
 import FeaturedRecipes from "@/components/FeaturedRecipes";
 import PopularRecipes from "@/components/PopularRecipes";
 import Features from "@/components/Features";
+import PricingSection from "@/components/PricingSection";
 import Testimonials from "@/components/Testimonials";
 import NewsletterStats from "@/components/NewsletterStats";
 
@@ -15,6 +16,7 @@ export default function Home() {
         <FeaturedRecipes />
         <PopularRecipes />
         <Features />
+        <PricingSection />
         <Testimonials />
         <NewsletterStats />
       </main>
