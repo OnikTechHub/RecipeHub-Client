@@ -115,10 +115,10 @@ const robotLottieAnimation = {
 };
 
 const suggestedPrompts = [
-  "What can I cook with eggs & tomatoes?",
-  "Healthy low-carb dinner recipes",
-  "How do I scale recipe ingredients?",
+  "What is RecipeHub & how does it work?",
   "Tell me about RecipeHub Premium access",
+  "Give me a quick 10-minute dinner recipe",
+  "What are the best vegan substitutes for eggs?",
 ];
 
 export default function AIChatbot() {
@@ -364,8 +364,9 @@ export default function AIChatbot() {
 
             {/* Suggested Quick Prompts */}
             {messages.length <= 2 && !isLoading && (
-              <div className="px-4 pb-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1.5">
+              <div className="px-4 pb-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
+                  <FaWandSparkles className="text-amber-500 text-[10px]" />
                   Suggested Questions:
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -373,9 +374,9 @@ export default function AIChatbot() {
                     <button
                       key={pIdx}
                       onClick={() => handleSendMessage(promptText)}
-                      className="text-[11px] px-2.5 py-1 rounded-xl bg-base-200 dark:bg-base-800 hover:bg-primary hover:text-white dark:hover:bg-primary border border-base-300/60 dark:border-base-700 transition-all font-medium cursor-pointer"
+                      className="text-[11px] px-2.5 py-1.5 rounded-xl bg-base-200/80 dark:bg-base-800/80 hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white dark:hover:from-primary dark:hover:to-accent border border-base-300/60 dark:border-base-700/60 transition-all duration-200 font-medium cursor-pointer flex items-center gap-1.5 shadow-xs hover:scale-[1.02] active:scale-95"
                     >
-                      {promptText}
+                      <span>{promptText}</span>
                     </button>
                   ))}
                 </div>
