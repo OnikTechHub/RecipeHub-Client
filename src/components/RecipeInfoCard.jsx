@@ -33,7 +33,7 @@ const RecipeInfoCard = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-base-200/40 p-6 md:p-8 rounded-3xl border border-base-300/40 shadow-sm">
       {/* Image */}
-      <div className="md:col-span-5 h-64 md:h-84 rounded-2xl overflow-hidden shadow-lg relative group">
+      <div className="md:col-span-5 h-60 sm:h-72 md:h-[340px] w-full rounded-2xl overflow-hidden shadow-lg relative group shrink-0">
         <img
           src={recipe.recipeImage || recipe.image}
           alt={recipe.recipeName}
@@ -51,7 +51,7 @@ const RecipeInfoCard = ({
         )}
 
         {/* Price Tag Overlay at Bottom Left */}
-        <div className="absolute bottom-3 left-3 bg-base-900/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-black text-white shadow-md border border-white/10">
+        <div className="absolute bottom-3 left-3 bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-xs font-black text-white shadow-md border border-white/10">
           {isPaid ? `$${Number(recipe.price).toFixed(2)}` : "Free"}
         </div>
       </div>

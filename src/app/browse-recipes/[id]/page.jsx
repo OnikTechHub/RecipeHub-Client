@@ -362,29 +362,33 @@ const RecipeDetailsPage = ({ params }) => {
                     <h3 className="text-xl font-black tracking-tight text-base-content">
                       Cooking Instructions
                     </h3>
-                    <p className="text-xs text-base-content/60 mt-0.5">
+                    <p className="text-xs text-base-content/60 mt-0.5 font-medium">
                       Follow these step-by-step culinary directions carefully.
                     </p>
                   </div>
 
                   {(accessReason === "admin" && isAdmin) && (
-                    <span className="badge badge-warning gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
-                      <FaShieldHalved className="text-[10px]" /> Admin Free Access
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-extrabold tracking-wide shrink-0">
+                      <FaShieldHalved className="text-xs" />
+                      <span>Admin Full Access</span>
                     </span>
                   )}
                   {accessReason === "premium" && (
-                    <span className="badge badge-accent gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
-                      <FaLockOpen className="text-[10px]" /> Premium Member Access
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-extrabold tracking-wide shrink-0">
+                      <FaCrown className="text-xs text-amber-500" />
+                      <span>Premium Member Access</span>
                     </span>
                   )}
                   {accessReason === "purchased" && (
-                    <span className="badge badge-success gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
-                      <FaLockOpen className="text-[10px]" /> Lifetime Unlocked
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-extrabold tracking-wide shrink-0">
+                      <FaLockOpen className="text-xs" />
+                      <span>Lifetime Unlocked</span>
                     </span>
                   )}
                   {accessReason === "author" && (
-                    <span className="badge badge-primary gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
-                      <FaShieldHalved className="text-[10px]" /> Your Creation
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs font-extrabold tracking-wide shrink-0">
+                      <FaUtensils className="text-xs" />
+                      <span>Your Recipe Creation</span>
                     </span>
                   )}
                 </div>
@@ -394,10 +398,10 @@ const RecipeDetailsPage = ({ params }) => {
                 </div>
 
                 {/* Helpful Actions */}
-                <div className="flex items-center gap-3 pt-4 border-t border-base-300/40">
+                <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-base-300/40">
                   <button
                     onClick={() => window.print()}
-                    className="btn btn-sm btn-ghost rounded-xl font-bold text-xs gap-2"
+                    className="btn btn-sm btn-ghost rounded-xl font-bold text-xs gap-2 cursor-pointer"
                   >
                     <FaPrint /> Print Recipe
                   </button>
@@ -406,7 +410,7 @@ const RecipeDetailsPage = ({ params }) => {
                       navigator.clipboard?.writeText(window.location.href);
                       toast.success("Recipe link copied!");
                     }}
-                    className="btn btn-sm btn-ghost rounded-xl font-bold text-xs gap-2"
+                    className="btn btn-sm btn-ghost rounded-xl font-bold text-xs gap-2 cursor-pointer"
                   >
                     <FaShareNodes /> Share Recipe
                   </button>
@@ -437,7 +441,7 @@ const RecipeDetailsPage = ({ params }) => {
                 {isPaid ? (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg text-left">
                     <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
-                      <span className="text-[10px] font-black uppercase text-emerald-600 block">80% to Creator</span>
+                      <span className="text-[10px] font-black uppercase text-emerald-600 block">Creator Payout</span>
                       <span className="text-xs font-bold text-base-content block">Support the Chef</span>
                     </div>
                     <div className="bg-base-100/80 p-3 rounded-2xl border border-base-300/60 shadow-xs">
