@@ -20,7 +20,7 @@ import { useCart } from "@/context/CartContext";
 const RecipeDetailsPage = ({ params }) => {
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
-  const { addToCart } = useCart();
+  const { addToCart, isPurchased } = useCart();
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,14 +68,27 @@ const RecipeDetailsPage = ({ params }) => {
       return;
     }
 
-    // Author access
-    if (
-      currentUserEmail &&
-      recipeObj.authorEmail &&
-      recipeObj.authorEmail.toLowerCase() === currentUserEmail.toLowerCase()
-    ) {
+    // Author / Creator access (Free access to own recipes)
+    const authorEmails = [
+      recipeObj.authorEmail,
+      recipeObj.userEmail,
+      recipeObj.creatorEmail,
+      recipeObj.email,
+      recipeObj.createdBy,
+    ]
+      .filter(Boolean)
+      .map((e) => e.toString().toLowerCase().trim());
+
+    if (currentUserEmail && authorEmails.includes(currentUserEmail.toLowerCase().trim())) {
       setHasAccess(true);
       setAccessReason("author");
+      return;
+    }
+
+    // Client-side cart context purchase check
+    if (isPurchased && isPurchased(id, recipeObj.authorEmail)) {
+      setHasAccess(true);
+      setAccessReason("purchased");
       return;
     }
 
@@ -92,9 +105,9 @@ const RecipeDetailsPage = ({ params }) => {
         `${SERVER_URL}/recipes/${id}/access?email=${encodeURIComponent(currentUserEmail)}`
       );
       const data = await res.json();
-      if (data.success) {
-        setHasAccess(data.hasAccess);
-        setAccessReason(data.reason || (data.hasAccess ? "purchased" : "locked"));
+      if (data.success && data.hasAccess) {
+        setHasAccess(true);
+        setAccessReason(data.reason || "purchased");
       } else {
         setHasAccess(false);
         setAccessReason("locked");
