@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartSidebar from "@/components/CartSidebar";
+import AIChatbot from "@/components/AIChatbot";
 import { CartProvider } from "@/context/CartContext";
 import { Toaster } from "react-hot-toast"; 
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <CartSidebar />
           <main className="min-h-[85vh]">{children}</main>
+          <AIChatbot />
           <Footer />
         </CartProvider>
       </body>
