@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaBookmark, FaClock, FaArrowRight, FaCrown, FaUtensils, FaBan } from "react-icons/fa6";
+import { FaBookmark, FaClock, FaArrowRight, FaCrown, FaUtensils, FaBan, FaFilePdf } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { downloadReceiptPDF } from "@/lib/pdfGenerator";
+import { useCart } from "@/context/CartContext";
 
 const MyPurchasedRecipesPage = () => {
     const [purchasedItems, setPurchasedItems] = useState([]);
@@ -28,6 +30,8 @@ const MyPurchasedRecipesPage = () => {
     const currentUserId = session?.user?.id || session?.user?._id;
 
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+    const { clearCart, fetchPurchasedIds } = useCart();
 
     const verifyStripePayment = async () => {
         if (!sessionId || !currentUserId) return;
@@ -66,6 +70,9 @@ const MyPurchasedRecipesPage = () => {
                         secondary: "#ffffff",
                     },
                 });
+
+                if (clearCart) clearCart();
+                if (fetchPurchasedIds) fetchPurchasedIds();
 
                 router.replace("/dashboard/purchased-recipes");
                 fetchPurchasedRecipes();
@@ -252,17 +259,29 @@ const MyPurchasedRecipesPage = () => {
                                                         <span>Cook Recipe</span>
                                                         <FaArrowRight className="text-[9px]" />
                                                     </Link>
-                                                    <Link
-                                                        href={`/dashboard/purchased-recipes/${item.recipeId}`}
-                                                        className="btn btn-ghost btn-xs font-semibold rounded-xl normal-case opacity-70 hover:opacity-100"
+                                                    <button
+                                                        onClick={() => downloadReceiptPDF(item, currentUserEmail)}
+                                                        className="btn btn-ghost btn-xs font-bold text-amber-500 hover:text-amber-600 rounded-xl normal-case gap-1"
+                                                        title="Download Official PDF Receipt"
                                                     >
-                                                        Receipt
-                                                    </Link>
+                                                        <FaFilePdf className="text-xs" />
+                                                        <span>Receipt</span>
+                                                    </button>
                                                 </div>
                                             ) : (
-                                                <span className="badge badge-sm bg-success/10 text-success border-success/20 font-black text-[10px] tracking-wide uppercase px-2.5 py-2">
-                                                    Active Premium
-                                                </span>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <span className="badge badge-sm bg-success/10 text-success border-success/20 font-black text-[10px] tracking-wide uppercase px-2.5 py-2">
+                                                        Active Premium
+                                                    </span>
+                                                    <button
+                                                        onClick={() => downloadReceiptPDF(item, currentUserEmail)}
+                                                        className="btn btn-ghost btn-xs font-bold text-amber-500 hover:text-amber-600 rounded-xl normal-case gap-1"
+                                                        title="Download Official PDF Receipt"
+                                                    >
+                                                        <FaFilePdf className="text-xs" />
+                                                        <span>Receipt</span>
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
