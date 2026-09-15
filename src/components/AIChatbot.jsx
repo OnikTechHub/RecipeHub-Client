@@ -12,6 +12,8 @@ import {
   FaUser,
   FaExpand,
   FaCompress,
+  FaCopy,
+  FaCheck,
 } from "react-icons/fa6";
 
 // Cute Lottie Animation Data for AI Robot
@@ -137,9 +139,36 @@ export default function AIChatbot() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState(null);
   const messagesEndRef = useRef(null);
 
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+  const handleCopyMessage = (text, idx) => {
+    if (!text) return;
+    const cleanText = text.trim();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cleanText).then(() => {
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx(null), 2000);
+      }).catch((err) => {
+        console.error("Clipboard copy failed:", err);
+      });
+    } else {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = cleanText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx(null), 2000);
+      } catch (e) {
+        console.error("Fallback copy failed:", e);
+      }
+    }
+  };
 
   // Auto-reset chatbot window when navbar route changes
   useEffect(() => {
@@ -327,20 +356,45 @@ export default function AIChatbot() {
                   </div>
 
                   <div
-                    className={`max-w-[85%] sm:max-w-[78%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-xs ${
+                    className={`group relative max-w-[85%] sm:max-w-[78%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-xs ${
                       msg.role === "user"
                         ? "bg-primary text-white rounded-br-none"
                         : "bg-base-200 dark:bg-base-800 text-base-content rounded-bl-none border border-base-300/60 dark:border-base-700/60"
                     }`}
                   >
                     <p>{msg.text}</p>
-                    <span
-                      className={`block text-[10px] mt-1 opacity-60 text-right ${
-                        msg.role === "user" ? "text-white/80" : "text-base-content/60"
-                      }`}
-                    >
-                      {msg.time}
-                    </span>
+
+                    <div className="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-black/5 dark:border-white/10">
+                      <button
+                        onClick={() => handleCopyMessage(msg.text, idx)}
+                        title={copiedIdx === idx ? "Copied to clipboard!" : "Copy message"}
+                        className={`text-[11px] font-medium flex items-center gap-1 transition-all duration-200 cursor-pointer px-1.5 py-0.5 rounded-md ${
+                          msg.role === "user"
+                            ? "text-white/80 hover:text-white hover:bg-white/15 active:scale-95"
+                            : "text-base-content/60 hover:text-primary hover:bg-base-300/60 dark:hover:bg-base-700/60 active:scale-95"
+                        }`}
+                      >
+                        {copiedIdx === idx ? (
+                          <>
+                            <FaCheck className="text-emerald-400 text-[11px] animate-pulse" />
+                            <span className="text-[10px] text-emerald-400 font-bold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <FaCopy className="text-[10px]" />
+                            <span className="text-[10px] opacity-90 font-medium">Copy</span>
+                          </>
+                        )}
+                      </button>
+
+                      <span
+                        className={`text-[10px] opacity-60 ${
+                          msg.role === "user" ? "text-white/80" : "text-base-content/60"
+                        }`}
+                      >
+                        {msg.time}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
