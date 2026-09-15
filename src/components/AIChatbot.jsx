@@ -385,37 +385,27 @@ export default function AIChatbot() {
         )}
       </AnimatePresence>
 
-      {/* Main Floating Robot Lottie / Fallback Trigger Widget */}
+      {/* Main Floating Robot Trigger Widget */}
       <motion.button
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle AI Chatbot"
-        className="relative group w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-primary via-accent to-secondary p-1 shadow-2xl hover:shadow-primary/50 flex items-center justify-center cursor-pointer transition-all duration-300"
+        className="relative group w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-primary via-accent to-secondary p-1 shadow-2xl hover:shadow-primary/50 flex items-center justify-center cursor-pointer transition-all duration-300 z-50 pointer-events-auto"
       >
-        <div className="w-full h-full rounded-full bg-base-100 dark:bg-base-900 flex items-center justify-center overflow-hidden border border-white/20">
-          {lottieLoaded && LottieComponent ? (
-            <LottieComponent
-              animationData={robotLottieAnimation}
-              loop={true}
-              autoplay={true}
-              className="w-10 h-10 sm:w-12 sm:h-12 scale-125"
-            />
-          ) : (
-            <div className="text-primary dark:text-amber-400 text-2xl sm:text-3xl flex items-center justify-center animate-pulse">
-              <FaRobot />
-            </div>
-          )}
+        <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-500 via-orange-500 to-primary text-white flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-inner relative">
+          <FaRobot className="text-2xl sm:text-3xl text-white drop-shadow-md transition-transform group-hover:scale-110" />
+          <FaWandSparkles className="text-xs text-amber-200 absolute top-2 right-2.5 animate-pulse" />
         </div>
 
         {/* Glowing Badge Pulse */}
         <span className="absolute -top-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 border-2 border-base-100 dark:border-base-900"></span>
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 border-2 border-white dark:border-base-900"></span>
         </span>
 
         {/* Hover Tooltip */}
-        <div className="absolute right-20 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 flex items-center gap-1.5 border border-white/10">
+        <div className="absolute right-20 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 flex items-center gap-1.5 border border-white/10">
           <FaWandSparkles className="text-amber-400" />
           <span>Ask Chef AI</span>
         </div>
