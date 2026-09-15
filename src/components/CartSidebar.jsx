@@ -7,7 +7,7 @@ import Link from "next/link";
 import { HashLoader } from "react-spinners";
 
 export default function CartSidebar() {
-  const { cart, removeFromCart, clearCart, cartTotal, isCartOpen, setIsCartOpen, handleCartCheckout, loadingCheckout } = useCart();
+  const { cart, removeFromCart, clearCart, cartTotal, isCartOpen, setIsCartOpen, handleCartCheckout, loadingCheckout, isAdmin } = useCart();
 
   if (!isCartOpen) return null;
 
@@ -31,11 +31,15 @@ export default function CartSidebar() {
               <div>
                 <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
                   Shopping Cart
-                  <span className="badge badge-primary font-bold text-xs">
-                    {cart.length} {cart.length === 1 ? "item" : "items"}
-                  </span>
+                  {!isAdmin && (
+                    <span className="badge badge-primary font-bold text-xs">
+                      {cart.length} {cart.length === 1 ? "item" : "items"}
+                    </span>
+                  )}
                 </h2>
-                <p className="text-xs text-base-content/60 font-medium">Review your secret paid recipes before checkout</p>
+                <p className="text-xs text-base-content/60 font-medium">
+                  {isAdmin ? "Admin Account Notice" : "Review your secret paid recipes before checkout"}
+                </p>
               </div>
             </div>
             <button
@@ -46,9 +50,33 @@ export default function CartSidebar() {
             </button>
           </div>
 
-          {/* Cart Item List */}
+          {/* Cart Item List / Admin Notice */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {cart.length === 0 ? (
+            {isAdmin ? (
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-12">
+                <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 text-3xl">
+                  👑
+                </div>
+                <div className="space-y-2 max-w-xs">
+                  <span className="badge badge-warning font-black text-[10px] uppercase">
+                    Admin Lifetime Access
+                  </span>
+                  <h3 className="text-base font-black text-base-content">
+                    All Recipes Unlocked
+                  </h3>
+                  <p className="text-xs text-base-content/70 font-medium leading-relaxed">
+                    As an Administrator, you have lifetime free access to all platform recipes (ingredients and instructions). The purchase and checkout system is disabled for your account.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="btn btn-primary btn-sm rounded-xl font-bold text-white normal-case gap-2"
+                >
+                  <span>Explore Unlocked Recipes</span>
+                  <FaArrowRight className="text-xs" />
+                </button>
+              </div>
+            ) : cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-12">
                 <div className="w-20 h-20 rounded-3xl bg-base-200 flex items-center justify-center text-base-content/30 text-3xl">
                   <FaCartShopping />
@@ -109,7 +137,7 @@ export default function CartSidebar() {
           </div>
 
           {/* Checkout Footer */}
-          {cart.length > 0 && (
+          {!isAdmin && cart.length > 0 && (
             <div className="p-5 border-t border-base-300 bg-base-200/60 space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-semibold text-base-content/70">

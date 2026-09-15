@@ -19,6 +19,7 @@ const RecipeInfoCard = ({
   recipe,
   hasAccess = false,
   accessReason = "free",
+  isAdmin = false,
   isLiked = false,
   onPurchase,
   onAddToCart,
@@ -27,6 +28,7 @@ const RecipeInfoCard = ({
   onOpenReport,
 }) => {
   const isPaid = recipe.isPaid && Number(recipe.price || 0) > 0;
+  const effectiveHasAccess = hasAccess || isAdmin;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-base-200/40 p-6 md:p-8 rounded-3xl border border-base-300/40 shadow-sm">
@@ -63,15 +65,17 @@ const RecipeInfoCard = ({
           {isPaid && (
             <span
               className={`text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full flex items-center gap-1.5 ${
-                hasAccess
+                effectiveHasAccess
                   ? "bg-success/10 text-success border border-success/20"
                   : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
               }`}
             >
-              {hasAccess ? (
+              {effectiveHasAccess ? (
                 <>
                   <FaLockOpen className="text-[10px]" />{" "}
-                  {accessReason === "author"
+                  {accessReason === "admin" || isAdmin
+                    ? "Admin Full Access"
+                    : accessReason === "author"
                     ? "Author Access"
                     : accessReason === "purchased"
                     ? "Lifetime Unlocked"
@@ -120,7 +124,7 @@ const RecipeInfoCard = ({
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 pt-3">
-          {isPaid && !hasAccess ? (
+          {isPaid && !effectiveHasAccess ? (
             <>
               <button
                 onClick={onPurchase}

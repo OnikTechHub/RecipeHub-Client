@@ -16,6 +16,32 @@ export const CartProvider = ({ children }) => {
   const currentUser = session?.user;
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
+  const [liveRole, setLiveRole] = useState(null);
+
+  // Fetch live role from backend to catch role updates (e.g. promoted to admin)
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setLiveRole(null);
+      return;
+    }
+    fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(currentUser.email)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setLiveRole(data.data.role);
+        }
+      })
+      .catch((err) => console.error("Error checking live role in CartContext:", err));
+  }, [currentUser?.email, SERVER_URL]);
+
+  const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
+  const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
+  const isAdmin =
+    liveRole === "admin" ||
+    currentUser?.role === "admin" ||
+    userEmailLower === "admin@recipehub.com" ||
+    (adminEmailEnv && userEmailLower === adminEmailEnv);
+
   // Load local storage cart on mount
   useEffect(() => {
     try {
@@ -73,15 +99,9 @@ export const CartProvider = ({ children }) => {
   // Helper: check if a recipe is purchased or owned
   const isPurchased = (recipeId, authorEmail) => {
     if (!recipeId) return false;
-    const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
-    const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
 
     // Universal Admin Access: All Admins get full free access to all recipes
-    if (
-      currentUser?.role === "admin" ||
-      userEmailLower === "admin@recipehub.com" ||
-      (adminEmailEnv && userEmailLower === adminEmailEnv)
-    ) {
+    if (isAdmin) {
       return true;
     }
 
@@ -99,14 +119,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = (recipe) => {
     if (!recipe) return;
 
-    const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
-    const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
-    const isAdminUser =
-      currentUser?.role === "admin" ||
-      userEmailLower === "admin@recipehub.com" ||
-      (adminEmailEnv && userEmailLower === adminEmailEnv);
-
-    if (isAdminUser) {
+    if (isAdmin) {
       toast("As an Admin, you have full free access to all recipes!", { icon: "👑" });
       return;
     }
@@ -161,6 +174,10 @@ export const CartProvider = ({ children }) => {
 
   // Cart Checkout
   const handleCartCheckout = async () => {
+    if (isAdmin) {
+      toast.error("As an Admin, you have full free access to all recipes. Checkout is disabled.");
+      return;
+    }
     if (!currentUser?.email) {
       toast.error("Please login first to proceed with checkout!");
       return;
@@ -216,6 +233,8 @@ export const CartProvider = ({ children }) => {
         handleCartCheckout,
         loadingCheckout,
         fetchPurchasedIds,
+        isAdmin,
+        liveRole,
       }}
     >
       {children}

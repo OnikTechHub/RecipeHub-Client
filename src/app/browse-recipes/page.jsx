@@ -7,7 +7,7 @@ import { HashLoader } from "react-spinners";
 import { useCart } from "@/context/CartContext";
 
 const BrowseRecipesPage = () => {
-    const { isPurchased, addToCart } = useCart();
+    const { isPurchased, addToCart, isAdmin } = useCart();
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -112,6 +112,7 @@ const BrowseRecipesPage = () => {
                                         const isPaid = recipe.recipeType === "Paid" || recipe.isPaid === true || Number(recipe.price || 0) > 0;
                                         const owned = isPurchased(recipe._id, recipe.authorEmail);
                                         const price = Number(recipe.price || 5).toFixed(2);
+                                        const isUnlockedForUser = owned || isAdmin || !isPaid;
 
                                         return (
                                             <div key={recipe._id} className="bg-base-100 rounded-2xl border border-base-300/40 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 group flex flex-col">
@@ -119,10 +120,10 @@ const BrowseRecipesPage = () => {
                                                     <img src={recipe.image || recipe.recipeImage} alt={recipe.recipeName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-base-100/90 backdrop-blur-md text-primary shadow-sm">
                                                         {Array.isArray(recipe.category) ? recipe.category[0] : recipe.category || "General"}
-                                                    </span>
+                                                     </span>
 
                                                     {/* Free vs Premium vs Unlocked Badge */}
-                                                    {owned && isPaid ? (
+                                                    {(owned || isAdmin) && isPaid ? (
                                                         <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-600 text-white shadow-md flex items-center gap-1 tracking-wider">
                                                             <FaLockOpen className="text-[9px]" /> Unlocked
                                                         </span>
@@ -146,8 +147,8 @@ const BrowseRecipesPage = () => {
                                                         <h3 className="font-bold text-base text-base-content tracking-tight line-clamp-2 group-hover:text-primary transition-colors">{recipe.recipeName}</h3>
                                                     </div>
 
-                                                    {/* Action Buttons */}
-                                                    {owned || !isPaid ? (
+                                                    {/* Action Buttons (For Admins, show ONLY "View Recipe") */}
+                                                    {isUnlockedForUser ? (
                                                         <Link href={`/browse-recipes/${recipe._id}`} className="btn btn-primary btn-md w-full rounded-2xl font-bold text-white normal-case shadow-sm hover:shadow-md gap-2">
                                                             <span>View Recipe</span>
                                                         </Link>

@@ -17,7 +17,7 @@ const Navbar = () => {
 
     const { data: session, isPending } = useSession();
     const user = session?.user;
-    const { cart, setIsCartOpen } = useCart();
+    const { cart, setIsCartOpen, isAdmin } = useCart();
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
@@ -121,19 +121,21 @@ const Navbar = () => {
             {/* Navbar End*/}
             <div className="navbar-end gap-2.5">
 
-                {/* Cart Icon Button */}
-                <button
-                    onClick={() => setIsCartOpen(true)}
-                    className="btn btn-ghost btn-circle relative hover:bg-base-200/80 transition-all duration-300 bg-base-200/30 border border-base-300/10"
-                    title="View Shopping Cart"
-                >
-                    <FaCartShopping className="w-4 h-4 text-primary" />
-                    {cart.length > 0 && (
-                        <span className="badge badge-primary badge-xs absolute -top-1 -right-1 font-black px-1.5 py-1 text-[9px] shadow-sm animate-pulse">
-                            {cart.length}
-                        </span>
-                    )}
-                </button>
+                {/* Cart Icon Button (Disabled for Admins who have free access to all recipes) */}
+                {!isAdmin && (
+                    <button
+                        onClick={() => setIsCartOpen(true)}
+                        className="btn btn-ghost btn-circle relative hover:bg-base-200/80 transition-all duration-300 bg-base-200/30 border border-base-300/10"
+                        title="View Shopping Cart"
+                    >
+                        <FaCartShopping className="w-4 h-4 text-primary" />
+                        {cart.length > 0 && (
+                            <span className="badge badge-primary badge-xs absolute -top-1 -right-1 font-black px-1.5 py-1 text-[9px] shadow-sm animate-pulse">
+                                {cart.length}
+                            </span>
+                        )}
+                    </button>
+                )}
 
                 {/* Theme Controller Button */}
                 <button

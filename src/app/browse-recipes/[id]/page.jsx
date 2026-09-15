@@ -20,7 +20,7 @@ import { useCart } from "@/context/CartContext";
 const RecipeDetailsPage = ({ params }) => {
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
-  const { addToCart, isPurchased } = useCart();
+  const { addToCart, isPurchased, isAdmin } = useCart();
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,6 +70,7 @@ const RecipeDetailsPage = ({ params }) => {
 
     // Admin user free global access
     if (
+      isAdmin ||
       session?.user?.role === "admin" ||
       currentUserEmail?.toLowerCase() === "admin@recipehub.com" ||
       currentUserEmail?.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase()
@@ -280,6 +281,7 @@ const RecipeDetailsPage = ({ params }) => {
           recipe={recipe}
           hasAccess={hasAccess}
           accessReason={accessReason}
+          isAdmin={isAdmin}
           isLiked={isLiked}
           onPurchase={handlePurchase}
           onAddToCart={() => addToCart(recipe)}
@@ -371,6 +373,11 @@ const RecipeDetailsPage = ({ params }) => {
                     </p>
                   </div>
 
+                  {(accessReason === "admin" || isAdmin) && (
+                    <span className="badge badge-warning gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
+                      <FaShieldHalved className="text-[10px]" /> Admin Free Access
+                    </span>
+                  )}
                   {accessReason === "purchased" && (
                     <span className="badge badge-success gap-1.5 font-bold text-xs py-3 px-3.5 shadow-xs">
                       <FaLockOpen className="text-[10px]" /> Lifetime Unlocked
