@@ -47,7 +47,7 @@ const BrowseRecipesContent = () => {
   const [totalRecipes, setTotalRecipes] = useState(0);
   const limit = 6;
 
-  const categories = ["All", "Breakfast", "Lunch", "Dinner", "Desserts"];
+  const categories = ["All", "Breakfast", "Lunch", "Dinner", "Snack", "Desserts"];
 
   const accessFilters = [
     { label: "All Recipes", value: "All", icon: FaUtensils, color: "text-primary" },

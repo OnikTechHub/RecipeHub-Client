@@ -12,6 +12,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "RecipeHub - Recipe Sharing Platform",
   description: "Explore secret culinary methods",
+  icons: {
+    icon: "/vercel.jpeg",
+    shortcut: "/vercel.jpeg",
+    apple: "/vercel.jpeg",
+  },
 };
 
 export default function RootLayout({ children }) {

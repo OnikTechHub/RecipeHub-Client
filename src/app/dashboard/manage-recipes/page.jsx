@@ -66,11 +66,14 @@ export default function ManageRecipes() {
 
     // Delete Recipe fun
     const handleDeleteRecipe = async (id, title) => {
+        const isDark = typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark";
         Swal.fire({
             title: "Are you sure?",
             text: `Delete "${title}" permanently?`,
             icon: "warning",
             showCancelButton: true,
+            background: isDark ? "#1e293b" : "#ffffff",
+            color: isDark ? "#f8fafc" : "#0f172a",
             confirmButtonColor: "#ef4444",
             cancelButtonColor: "#6b7280",
             confirmButtonText: "Yes, delete it!"

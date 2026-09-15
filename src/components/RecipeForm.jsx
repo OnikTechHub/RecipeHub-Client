@@ -71,6 +71,7 @@ const RecipeForm = ({
             <option>Breakfast</option>
             <option>Lunch</option>
             <option>Dinner</option>
+            <option>Snack</option>
             <option>Desserts</option>
           </select>
         </div>

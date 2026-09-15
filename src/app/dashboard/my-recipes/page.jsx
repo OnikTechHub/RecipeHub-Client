@@ -24,9 +24,11 @@ const MyRecipesPage = () => {
     const [totalRecipes, setTotalRecipes] = useState(0);
     const limit = 8;
 
-    // Modal & Image Upload States
+    // Modal & Image Upload & Delete States
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState(null);
+    const [recipeToDelete, setRecipeToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -74,65 +76,37 @@ const MyRecipesPage = () => {
         fetchMyRecipes();
     }, [currentUserEmail, currentPage, SERVER_URL]);
 
-    // Delete Recipe Handler
-
+    // Delete Recipe Handlers (Centered Dark-Mode Compatible Modal)
     const handleDeleteRecipe = (id) => {
-        toast((t) => (
-            <div className="flex flex-col gap-3 p-1">
-                <div className="flex items-start gap-2">
-                    <span className="text-xl"><RiDeleteBin6Fill className="w-5 h-5" /></span>
-                    <div>
-                        <p className="font-bold text-sm text-base-content">Are you sure?</p>
-                        <p className="text-xs text-base-content/60 mt-0.5">You want to delete this recipe permanently?</p>
-                    </div>
-                </div>
+        const found = recipes.find((r) => r._id === id);
+        if (found) {
+            setRecipeToDelete(found);
+        } else {
+            setRecipeToDelete({ _id: id, recipeName: "this recipe" });
+        }
+    };
 
-                {/* Action Buttons Inside Toast */}
-                <div className="flex justify-end gap-2 mt-1">
-                    <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="btn btn-xs bg-base-200 hover:bg-base-300 border-none rounded-md px-3 font-semibold normal-case text-xs"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={async () => {
-                            toast.dismiss(t.id);
+    const confirmDeleteRecipe = async () => {
+        if (!recipeToDelete?._id) return;
+        setIsDeleting(true);
+        const deletingToast = toast.loading("Deleting recipe...");
+        try {
+            const res = await fetch(`${SERVER_URL}/recipes/${recipeToDelete._id}`, { method: "DELETE" });
+            const data = await res.json();
 
-                            const deletingToast = toast.loading("Deleting recipe...");
-                            try {
-                                const res = await fetch(`${SERVER_URL}/recipes/${id}`, { method: "DELETE" });
-                                const data = await res.json();
-
-                                if (data.success) {
-                                    toast.success("Recipe Deleted Successfully!", { id: deletingToast });
-                                    setRecipes((prev) => prev.filter((recipe) => recipe._id !== id));
-                                } else {
-                                    toast.error(data.message || "Failed to delete recipe.", { id: deletingToast });
-                                }
-                            } catch (error) {
-                                console.error("Error deleting", error);
-                                toast.error("Network error!", { id: deletingToast });
-                            }
-                        }}
-                        className="btn btn-xs btn-error text-white rounded-md px-3 font-bold normal-case text-xs"
-                    >
-                        Yes, Delete
-                    </button>
-                </div>
-            </div>
-        ), {
-            duration: 6000,
-            position: "top-center",
-            style: {
-                borderRadius: '16px',
-                background: '#fff',
-                color: '#333',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
-                padding: '12px'
+            if (data.success) {
+                toast.success("Recipe Deleted Successfully!", { id: deletingToast });
+                setRecipes((prev) => prev.filter((recipe) => recipe._id !== recipeToDelete._id));
+            } else {
+                toast.error(data.message || "Failed to delete recipe.", { id: deletingToast });
             }
-        });
+        } catch (error) {
+            console.error("Error deleting recipe:", error);
+            toast.error("Network error! Failed to delete recipe.", { id: deletingToast });
+        } finally {
+            setIsDeleting(false);
+            setRecipeToDelete(null);
+        }
     };
 
     // Click Edit Button -> Open Modal
@@ -556,6 +530,46 @@ const MyRecipesPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Centered Delete Confirmation Modal with Dark Mode Support */}
+            {recipeToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-base-100 text-base-content border border-base-300 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5 text-center relative">
+                        <div className="w-14 h-14 rounded-2xl bg-error/10 text-error flex items-center justify-center text-2xl mx-auto border border-error/20">
+                            <RiDeleteBin6Fill className="w-7 h-7 mx-auto text-error" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-black tracking-tight text-base-content">
+                                Delete Recipe?
+                            </h3>
+                            <p className="text-xs text-base-content/70 font-medium leading-relaxed">
+                                Are you sure you want to permanently delete{" "}
+                                <strong className="text-base-content font-bold">
+                                    "{recipeToDelete.recipeName || recipeToDelete.title || "this recipe"}"
+                                </strong>
+                                ? This action cannot be undone.
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                disabled={isDeleting}
+                                onClick={() => setRecipeToDelete(null)}
+                                className="btn btn-sm btn-ghost border border-base-300 rounded-xl px-4 normal-case text-xs font-bold"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={isDeleting}
+                                onClick={confirmDeleteRecipe}
+                                className="btn btn-sm btn-error text-white rounded-xl px-5 normal-case text-xs font-bold border-none shadow-md"
+                            >
+                                {isDeleting ? "Deleting..." : "Yes, Delete Recipe"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
