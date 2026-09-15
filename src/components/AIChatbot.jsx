@@ -260,7 +260,7 @@ export default function AIChatbot() {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className={`mb-4 bg-base-100/95 dark:bg-base-900/95 backdrop-blur-2xl rounded-3xl border border-base-300 dark:border-base-700 shadow-2xl flex flex-col overflow-hidden text-base-content transition-all duration-300 ${
               isMaximized
-                ? "fixed inset-3 sm:inset-6 md:inset-10 z-50 max-w-6xl mx-auto w-auto h-auto"
+                ? "fixed top-20 sm:top-24 bottom-4 left-3 right-3 sm:left-6 sm:right-6 md:left-10 md:right-10 z-40 max-w-6xl mx-auto w-auto h-auto"
                 : "w-[90vw] sm:w-[380px] h-[520px]"
             }`}
           >
