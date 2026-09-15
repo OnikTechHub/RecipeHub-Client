@@ -73,14 +73,23 @@ export const CartProvider = ({ children }) => {
   // Helper: check if a recipe is purchased or owned
   const isPurchased = (recipeId, authorEmail) => {
     if (!recipeId) return false;
+    const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
+    const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
+
+    // Universal Admin Access: All Admins get full free access to all recipes
     if (
-      currentUser?.email &&
-      authorEmail &&
-      authorEmail.toLowerCase() === currentUser.email.toLowerCase()
+      currentUser?.role === "admin" ||
+      userEmailLower === "admin@recipehub.com" ||
+      (adminEmailEnv && userEmailLower === adminEmailEnv)
     ) {
       return true;
     }
-    if (currentUser?.role === "admin" || currentUser?.email === "admin@recipehub.com") {
+
+    if (
+      userEmailLower &&
+      authorEmail &&
+      authorEmail.toLowerCase() === userEmailLower
+    ) {
       return true;
     }
     return purchasedIds.includes(recipeId);
@@ -89,6 +98,18 @@ export const CartProvider = ({ children }) => {
   // Add recipe to cart
   const addToCart = (recipe) => {
     if (!recipe) return;
+
+    const adminEmailEnv = process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase() : "";
+    const userEmailLower = currentUser?.email ? currentUser.email.toLowerCase() : "";
+    const isAdminUser =
+      currentUser?.role === "admin" ||
+      userEmailLower === "admin@recipehub.com" ||
+      (adminEmailEnv && userEmailLower === adminEmailEnv);
+
+    if (isAdminUser) {
+      toast("As an Admin, you have full free access to all recipes!", { icon: "👑" });
+      return;
+    }
 
     const isPaid = recipe.recipeType === "Paid" || recipe.isPaid === true || Number(recipe.price || 0) > 0;
     if (!isPaid) {

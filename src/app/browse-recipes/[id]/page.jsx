@@ -68,6 +68,17 @@ const RecipeDetailsPage = ({ params }) => {
       return;
     }
 
+    // Admin user free global access
+    if (
+      session?.user?.role === "admin" ||
+      currentUserEmail?.toLowerCase() === "admin@recipehub.com" ||
+      currentUserEmail?.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase()
+    ) {
+      setHasAccess(true);
+      setAccessReason("admin");
+      return;
+    }
+
     // Author / Creator access (Free access to own recipes)
     const authorEmails = [
       recipeObj.authorEmail,
