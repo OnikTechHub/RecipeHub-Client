@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
-import { FaTrash, FaCheck, FaFlag, FaUtensils, FaUser } from "react-icons/fa6";
+import { FaTrash, FaCheck, FaFlag, FaUtensils, FaUser, FaEye, FaXmark, FaClock, FaTriangleExclamation } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
 
@@ -14,6 +14,7 @@ const AdminReports = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalReports, setTotalReports] = useState(0);
+    const [selectedReport, setSelectedReport] = useState(null);
     const limit = 8;
 
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -62,6 +63,7 @@ const AdminReports = () => {
                     await axios.delete(`${SERVER_URL}/reports/${reportId}?action=delete`);
                 }
                 setReports(reports.filter((r) => r._id !== reportId && r.recipeId !== recipeId));
+                if (selectedReport?._id === reportId) setSelectedReport(null);
                 toast.success("Recipe and related reports removed!");
                 fetchReports();
             } catch (err) {
@@ -88,6 +90,7 @@ const AdminReports = () => {
             try {
                 await axios.delete(`${SERVER_URL}/admin/reports/${reportId}`);
                 setReports(reports.filter((r) => r._id !== reportId));
+                if (selectedReport?._id === reportId) setSelectedReport(null);
                 toast.success("Report flag dismissed! Recipe remains active.");
                 fetchReports();
             } catch (err) {
@@ -117,10 +120,10 @@ const AdminReports = () => {
                 <div>
                     <h1 className="text-2xl font-black text-base-content tracking-tight">Community Recipe Reports</h1>
                     <p className="text-xs text-base-content/60 font-medium mt-1">
-                        Review reported content, take moderation actions, or dismiss false flags.
+                        Review reported content, view individual report details, or dismiss false flags.
                     </p>
                 </div>
-                <div className="badge badge-error gap-1.5 font-bold p-3 text-white">
+                <div className="badge badge-error gap-1.5 font-bold p-3 text-white shadow-sm">
                     <FaFlag className="text-xs" /> Total Reports: {totalReports}
                 </div>
             </div>
@@ -132,7 +135,7 @@ const AdminReports = () => {
                         <tr>
                             <th className="py-3.5 pl-5">Target Recipe</th>
                             <th className="py-3.5">Reporter Email</th>
-                            <th className="py-3.5">Report Reason</th>
+                            <th className="py-3.5">Primary Reason</th>
                             <th className="py-3.5 text-center pr-5">Moderation Actions</th>
                         </tr>
                     </thead>
@@ -150,6 +153,7 @@ const AdminReports = () => {
                                 const target = report.recipeInfo || report.recipeDetails;
                                 const recipeName = target?.recipeName || report.recipeName || "Recipe Details N/A";
                                 const recipeImage = target?.image || target?.recipeImage;
+                                const perRecipeCount = report.recipeReportCount || 1;
 
                                 return (
                                     <tr key={report._id} className="hover:bg-base-200/40 border-b border-base-200/50">
@@ -164,7 +168,12 @@ const AdminReports = () => {
                                                 </div>
                                                 <div>
                                                     <span className="font-bold text-sm block text-base-content">{recipeName}</span>
-                                                    <span className="text-[10px] font-mono text-base-content/50 block">ID: {report.recipeId}</span>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[10px] font-mono text-base-content/50">ID: {report.recipeId}</span>
+                                                        <span className="badge badge-error/10 text-error border border-error/20 font-black text-[10px] px-2 py-0.5 inline-flex items-center gap-1">
+                                                            <FaFlag className="text-[9px]" /> {perRecipeCount} {perRecipeCount === 1 ? "Report" : "Reports"}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -182,19 +191,27 @@ const AdminReports = () => {
                                         <td className="py-3.5 pr-5 text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
+                                                    onClick={() => setSelectedReport(report)}
+                                                    className="btn btn-neutral btn-xs text-white font-bold gap-1 rounded-lg px-2.5 py-1.5 h-auto min-h-0 shadow-xs"
+                                                    title="View detailed report list"
+                                                >
+                                                    <FaEye className="text-[10px]" /> View Details
+                                                </button>
+
+                                                <button
                                                     onClick={() => handleDeleteRecipe(report._id, report.recipeId, recipeName)}
-                                                    className="btn btn-error btn-xs text-white font-bold gap-1 rounded-lg px-3 py-1.5 h-auto min-h-0 shadow-xs"
+                                                    className="btn btn-error btn-xs text-white font-bold gap-1 rounded-lg px-2.5 py-1.5 h-auto min-h-0 shadow-xs"
                                                     title="Permanently remove recipe from database"
                                                 >
-                                                    <FaTrash className="text-[10px]" /> Delete Recipe
+                                                    <FaTrash className="text-[10px]" /> Delete
                                                 </button>
 
                                                 <button
                                                     onClick={() => handleDismissReport(report._id, recipeName)}
-                                                    className="btn btn-success btn-xs text-white font-bold gap-1 rounded-lg px-3 py-1.5 h-auto min-h-0 shadow-xs"
+                                                    className="btn btn-success btn-xs text-white font-bold gap-1 rounded-lg px-2.5 py-1.5 h-auto min-h-0 shadow-xs"
                                                     title="Dismiss flag and keep recipe active"
                                                 >
-                                                    <FaCheck className="text-[10px]" /> Dismiss Report
+                                                    <FaCheck className="text-[10px]" /> Dismiss
                                                 </button>
                                             </div>
                                         </td>
@@ -218,6 +235,145 @@ const AdminReports = () => {
                     </div>
                 )}
             </div>
+
+            {/* Detailed Report Modal */}
+            {selectedReport && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn">
+                    <div className="bg-base-100 border border-base-300 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden text-base-content">
+                        
+                        {/* Modal Header */}
+                        <div className="p-5 border-b border-base-300 bg-base-200/50 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-error/10 text-error rounded-xl border border-error/20">
+                                    <FaTriangleExclamation className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black tracking-tight">Report Log Details</h3>
+                                    <p className="text-xs text-base-content/60 font-medium">
+                                        Recipe ID: <span className="font-mono">{selectedReport.recipeId}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedReport(null)}
+                                className="btn btn-ghost btn-circle btn-sm hover:bg-base-300 rounded-xl"
+                            >
+                                <FaXmark className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                            
+                            {/* Target Recipe Summary */}
+                            <div className="flex items-center gap-4 bg-base-200/40 p-4 rounded-2xl border border-base-300/60">
+                                <div className="w-14 h-14 rounded-xl bg-base-300 overflow-hidden shrink-0 border border-base-300">
+                                    {(selectedReport.recipeInfo?.image || selectedReport.recipeInfo?.recipeImage) ? (
+                                        <img
+                                            src={selectedReport.recipeInfo?.image || selectedReport.recipeInfo?.recipeImage}
+                                            alt="Recipe"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <FaUtensils className="text-base-content/30 text-xl" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-base text-base-content truncate">
+                                        {selectedReport.recipeInfo?.recipeName || selectedReport.recipeName || "Recipe Title N/A"}
+                                    </h4>
+                                    <p className="text-xs text-base-content/60 font-medium">
+                                        Category: {selectedReport.recipeInfo?.category || "General"} | Price: ${selectedReport.recipeInfo?.price || 0}
+                                    </p>
+                                </div>
+                                <div className="badge badge-error gap-1 font-black text-white text-xs px-3 py-2 shadow-xs">
+                                    <FaFlag className="text-[10px]" /> {selectedReport.recipeReportCount || 1} Total {selectedReport.recipeReportCount === 1 ? "Report" : "Reports"}
+                                </div>
+                            </div>
+
+                            {/* Reports Submissions Breakdown */}
+                            <div className="space-y-3">
+                                <h5 className="font-extrabold text-sm text-base-content tracking-tight uppercase text-[11px] opacity-70">
+                                    Report Submissions History ({selectedReport.recipeAllReports?.length || 1})
+                                </h5>
+
+                                {Array.isArray(selectedReport.recipeAllReports) && selectedReport.recipeAllReports.length > 0 ? (
+                                    selectedReport.recipeAllReports.map((entry, idx) => (
+                                        <div key={entry._id || idx} className="bg-base-200/50 p-4 rounded-2xl border border-base-300/60 space-y-2">
+                                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 border-b border-base-300/40 pb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
+                                                        <FaUser className="text-[10px] opacity-60" /> {entry.reporterEmail || "Anonymous"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="badge badge-warning/20 text-warning-content border-warning/30 font-bold text-[11px] px-2.5 py-1">
+                                                        {entry.reason || "Content Flag"}
+                                                    </span>
+                                                    <span className="text-[10px] opacity-50 flex items-center gap-1">
+                                                        <FaClock className="text-[9px]" />
+                                                        {entry.reportedAt ? new Date(entry.reportedAt).toLocaleDateString("en-US", {
+                                                            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                        }) : "N/A"}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {entry.details && (
+                                                <div className="text-xs text-base-content/80 font-medium bg-base-100 p-3 rounded-xl border border-base-300/40">
+                                                    <span className="font-bold block text-[10px] uppercase opacity-50 mb-0.5">Reporter Message / Details:</span>
+                                                    <p className="whitespace-pre-wrap">{entry.details}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="bg-base-200/50 p-4 rounded-2xl border border-base-300/60 space-y-2">
+                                        <div className="flex justify-between items-center border-b border-base-300/40 pb-2">
+                                            <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
+                                                <FaUser className="text-[10px] opacity-60" /> {selectedReport.reporterEmail || "Anonymous"}
+                                            </span>
+                                            <span className="badge badge-warning/20 text-warning-content border-warning/30 font-bold text-[11px] px-2.5 py-1">
+                                                {selectedReport.reason || "Content Flag"}
+                                            </span>
+                                        </div>
+                                        {selectedReport.details && (
+                                            <div className="text-xs text-base-content/80 font-medium bg-base-100 p-3 rounded-xl border border-base-300/40">
+                                                <span className="font-bold block text-[10px] uppercase opacity-50 mb-0.5">Reporter Message / Details:</span>
+                                                <p className="whitespace-pre-wrap">{selectedReport.details}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer Actions */}
+                        <div className="p-4 border-t border-base-300 bg-base-200/60 flex items-center justify-end gap-3">
+                            <button
+                                onClick={() => setSelectedReport(null)}
+                                className="btn btn-ghost btn-sm rounded-xl font-bold normal-case"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => handleDeleteRecipe(selectedReport._id, selectedReport.recipeId, selectedReport.recipeInfo?.recipeName || selectedReport.recipeName)}
+                                className="btn btn-error btn-sm text-white font-bold rounded-xl normal-case gap-1.5 shadow-sm"
+                            >
+                                <FaTrash className="text-xs" /> Delete Recipe Completely
+                            </button>
+                            <button
+                                onClick={() => handleDismissReport(selectedReport._id, selectedReport.recipeInfo?.recipeName || selectedReport.recipeName)}
+                                className="btn btn-success btn-sm text-white font-bold rounded-xl normal-case gap-1.5 shadow-sm"
+                            >
+                                <FaCheck className="text-xs" /> Dismiss Report Flag
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
