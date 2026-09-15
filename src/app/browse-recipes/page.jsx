@@ -14,12 +14,16 @@ import {
   FaTag
 } from "react-icons/fa6";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
 import { useCart } from "@/context/CartContext";
 import { authClient } from "@/lib/auth-client";
 
-const BrowseRecipesPage = () => {
+const BrowseRecipesContent = () => {
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+
   const { isPurchased, addToCart, isAdmin } = useCart();
   const { data: session } = authClient.useSession();
   const currentUserEmail = session?.user?.email;
@@ -29,6 +33,13 @@ const BrowseRecipesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedAccessFilter, setSelectedAccessFilter] = useState("All"); // "All", "Free", "Paid", "Purchased"
+
+  // Sync category from URL query parameter on initial render or when query changes
+  useEffect(() => {
+    if (categoryFromUrl && ["Breakfast", "Lunch", "Dinner", "Desserts"].includes(categoryFromUrl)) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -426,4 +437,14 @@ const BrowseRecipesPage = () => {
   );
 };
 
-export default BrowseRecipesPage;
+export default function BrowseRecipesPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <HashLoader color="#10b981" size={40} />
+      </div>
+    }>
+      <BrowseRecipesContent />
+    </React.Suspense>
+  );
+}
