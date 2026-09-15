@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaPaperPlane,
@@ -9,6 +10,8 @@ import {
   FaUtensils,
   FaRobot,
   FaUser,
+  FaExpand,
+  FaCompress,
 } from "react-icons/fa6";
 
 // Cute Lottie Animation Data for AI Robot
@@ -119,7 +122,9 @@ const suggestedPrompts = [
 ];
 
 export default function AIChatbot() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [lottieLoaded, setLottieLoaded] = useState(false);
   const [LottieComponent, setLottieComponent] = useState(null);
 
@@ -135,6 +140,12 @@ export default function AIChatbot() {
   const messagesEndRef = useRef(null);
 
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+  // Auto-reset chatbot window when navbar route changes
+  useEffect(() => {
+    setIsOpen(false);
+    setIsMaximized(false);
+  }, [pathname]);
 
   useEffect(() => {
     // Safely load lottie-react dynamically on the client side with graceful fallback
@@ -247,7 +258,11 @@ export default function AIChatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 20 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="mb-4 w-[90vw] sm:w-[380px] h-[520px] bg-base-100/95 dark:bg-base-900/95 backdrop-blur-2xl rounded-3xl border border-base-300 dark:border-base-700 shadow-2xl flex flex-col overflow-hidden text-base-content"
+            className={`mb-4 bg-base-100/95 dark:bg-base-900/95 backdrop-blur-2xl rounded-3xl border border-base-300 dark:border-base-700 shadow-2xl flex flex-col overflow-hidden text-base-content transition-all duration-300 ${
+              isMaximized
+                ? "fixed inset-3 sm:inset-6 md:inset-10 z-50 max-w-6xl mx-auto w-auto h-auto"
+                : "w-[90vw] sm:w-[380px] h-[520px]"
+            }`}
           >
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-primary via-accent to-secondary text-white flex items-center justify-between shadow-md">
@@ -266,6 +281,13 @@ export default function AIChatbot() {
 
               <div className="flex items-center gap-1">
                 <button
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  title={isMaximized ? "Restore / Minimize" : "Maximize / Fullscreen"}
+                  className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white text-xs cursor-pointer"
+                >
+                  {isMaximized ? <FaCompress /> : <FaExpand />}
+                </button>
+                <button
                   onClick={clearChatHistory}
                   title="Clear Conversation"
                   className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white text-xs cursor-pointer"
@@ -273,7 +295,10 @@ export default function AIChatbot() {
                   <FaRotate />
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsMaximized(false);
+                  }}
                   title="Close Chatbot"
                   className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white cursor-pointer"
                 >
@@ -302,7 +327,7 @@ export default function AIChatbot() {
                   </div>
 
                   <div
-                    className={`max-w-[80%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-xs ${
+                    className={`max-w-[85%] sm:max-w-[78%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-xs ${
                       msg.role === "user"
                         ? "bg-primary text-white rounded-br-none"
                         : "bg-base-200 dark:bg-base-800 text-base-content rounded-bl-none border border-base-300/60 dark:border-base-700/60"
