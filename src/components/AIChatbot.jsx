@@ -257,10 +257,10 @@ export default function AIChatbot() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm tracking-tight flex items-center gap-1.5">
-                    Chef AI Assistant
+                    Chef RecipeHub AI
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                   </h3>
-                  <p className="text-[11px] opacity-85 font-medium">Powered by Gemini AI (10-Key Rotation)</p>
+                  <p className="text-[11px] opacity-85 font-medium">Your personal smart cooking & recipe guide</p>
                 </div>
               </div>
 
