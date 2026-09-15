@@ -198,8 +198,8 @@ export default function ManageUsers() {
                                                 <FaCrown className="text-[10px]" /> Premium
                                             </span>
                                         ) : (
-                                            <span className="badge badge-neutral badge-sm gap-1 text-base-content/80 font-bold p-2.5 rounded-lg">
-                                                <FaUser className="text-[10px]" /> Free Tier
+                                            <span className="badge bg-base-200 border border-base-300 text-base-content font-bold text-xs gap-1.5 p-2.5 rounded-lg shadow-2xs">
+                                                <FaUser className="text-[10px] text-primary" /> Free Tier
                                             </span>
                                         )}
                                     </td>
