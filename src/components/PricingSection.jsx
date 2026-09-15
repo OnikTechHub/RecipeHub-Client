@@ -32,6 +32,7 @@ const pricingTiers = [
     period: "Lifetime Access",
     description: "Unlock all platform recipes, secret cooking instructions, and unlimited recipe uploads.",
     features: [
+      "AI Smart Recipe Generator (Weekly 2 AI recipes)",
       "Unlimited access to ALL Free & Premium recipes",
       "Full step-by-step cooking instructions & secret ingredients",
       "Unlimited recipe creation & publishing",

@@ -68,6 +68,8 @@ export default function AIRecipeGenerator() {
   // Monetization & Saving States
   const [isPaidSave, setIsPaidSave] = useState(false);
   const [recipePriceSave, setRecipePriceSave] = useState(4.99);
+  const [dynamicPrice, setDynamicPrice] = useState("$14.99");
+  const [dynamicPeriod, setDynamicPeriod] = useState("Lifetime Access");
 
   // Weekly Usage Limit & Modal States
   const [showQuotaModal, setShowQuotaModal] = useState(false);
@@ -88,6 +90,21 @@ export default function AIRecipeGenerator() {
   const [saved, setSaved] = useState(false);
 
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+  // Fetch Dynamic Pricing Plan from Server
+  useEffect(() => {
+    fetch(`${SERVER_URL}/pricing-plans`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.plans) {
+          const fetchedPrice = data.plans.proFoodie?.price || data.plans.masterChef?.price || "$14.99";
+          const fetchedPeriod = data.plans.proFoodie?.period || "Lifetime Access";
+          setDynamicPrice(fetchedPrice);
+          setDynamicPeriod(fetchedPeriod);
+        }
+      })
+      .catch((err) => console.error("Error fetching dynamic pricing in AI generator:", err));
+  }, [SERVER_URL]);
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -398,7 +415,7 @@ export default function AIRecipeGenerator() {
               href="/pricing"
               className="btn btn-warning btn-md rounded-2xl font-extrabold px-8 gap-2 shadow-lg hover:scale-105 transition-all cursor-pointer text-slate-950"
             >
-              <FaCrown className="text-sm" /> Upgrade to Premium - $9.99/mo
+              <FaCrown className="text-sm" /> Upgrade to Premium ({dynamicPrice} - {dynamicPeriod})
             </Link>
             <Link
               href="/browse-recipes"
