@@ -27,20 +27,78 @@ const LoginPage = () => {
 
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
+  const { data: session } = authClient.useSession();
+
+  const checkAndExecutePendingCheckout = async () => {
+    const pendingCheckout = typeof window !== "undefined" ? localStorage.getItem("pending_membership_checkout") : null;
+    if (pendingCheckout) {
+      localStorage.removeItem("pending_membership_checkout");
+      const toastId = toast.loading("Redirecting to Stripe Checkout...", {
+        style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+      });
+      try {
+        const res = await fetch(`${SERVER_URL}/create-checkout-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ recipeId: "membership_upgrade" }),
+        });
+        const data = await res.json();
+        toast.dismiss(toastId);
+        if (data?.url) {
+          window.location.href = data.url;
+          return true;
+        } else {
+          toast.error(data?.message || "Failed to initiate payment session.");
+        }
+      } catch (err) {
+        toast.dismiss(toastId);
+        console.error("Pending checkout error:", err);
+      }
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    if (session?.user) {
+      checkAndExecutePendingCheckout().then((redirected) => {
+        if (!redirected) {
+          router.push("/dashboard");
+        }
+      });
+    }
+  }, [session]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
       setLoading(true);
+      const targetEmail = email.trim().toLowerCase();
 
+      // 1. Check if user account exists in database
+      const roleRes = await fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(targetEmail)}`);
+      const roleData = await roleRes.json();
+
+      if (roleRes.status === 404 || !roleData.success || roleData.message?.includes("not found")) {
+        toast.error("No account found with this email. Please register first.", {
+          duration: 4000,
+          style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 2. Email exists in database, attempt password sign in
       const { data, error } = await authClient.signIn.email({
-        email: email.trim().toLowerCase(),
+        email: targetEmail,
         password: password,
       });
 
       if (error) {
-        toast.error(error.message || "Invalid email or password.", {
-          style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+        toast.error("Invalid password. Please try again.", {
+          duration: 4000,
+          style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
         });
       } else {
         toast.success("Welcome Back! Login Successful.", {
@@ -52,18 +110,20 @@ const LoginPage = () => {
         fetch(`${SERVER_URL}/api/auth/login-notification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+          body: JSON.stringify({ email: targetEmail }),
         }).catch((notifyErr) => {
           console.warn("Login notification trigger failed:", notifyErr.message);
         });
 
-        const currentEmail = email;
         setEmail("");
         setPassword("");
 
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1200);
+        const redirected = await checkAndExecutePendingCheckout();
+        if (!redirected) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 1200);
+        }
       }
     } catch (err) {
       console.error("Login error:", err);

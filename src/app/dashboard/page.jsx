@@ -26,6 +26,32 @@ export default function DashboardOverview() {
                 const roleRes = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/check-user-role?email=${email}`);
                 const roleData = await roleRes.json();
 
+                // Check for pending membership checkout (e.g. from homepage subscription button or social sign-in)
+                const pendingCheckout = typeof window !== "undefined" ? localStorage.getItem("pending_membership_checkout") : null;
+                if (pendingCheckout) {
+                    localStorage.removeItem("pending_membership_checkout");
+                    const toastId = toast.loading("Redirecting to Stripe Checkout...", {
+                        style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+                    });
+                    try {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/create-checkout-session`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({ recipeId: "membership_upgrade" }),
+                        });
+                        const data = await res.json();
+                        toast.dismiss(toastId);
+                        if (data?.url) {
+                            window.location.href = data.url;
+                            return;
+                        }
+                    } catch (err) {
+                        toast.dismiss(toastId);
+                        console.error("Dashboard auto checkout error:", err);
+                    }
+                }
+
                 // Block User
                 if (roleData.success && roleData.isBlocked) {
                     await authClient.signOut(); 
