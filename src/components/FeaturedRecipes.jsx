@@ -12,11 +12,11 @@ const FeaturedRecipes = () => {
         const fetchFeatured = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/featured-recipes`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/featured-recipes?limit=8`);
                 const data = await res.json();
 
-                if (data.success) {
-                    const featured = data.data.filter(recipe => recipe.isFeatured === true);
+                if (data.success && Array.isArray(data.data)) {
+                    const featured = data.data.filter(recipe => recipe.isFeatured === true).slice(0, 8);
                     setFeaturedRecipes(featured);
                 }
             } catch (error) {
