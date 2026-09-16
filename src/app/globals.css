@@ -20,3 +20,8 @@
     --foreground: #ededed;
   }
 }
+
+/* Toast Notifications Solid Opacity Fix */
+div[aria-live="polite"] > div {
+  opacity: 1 !important;
+}

@@ -28,15 +28,54 @@ export default function RootLayout({ children }) {
             position="top-center" 
             reverseOrder={false}
             toastOptions={{
-              duration: 3000,
+              duration: 3500,
               style: {
-                background: 'var(--fallback-b1,hsl(var(--b1)))',
-                color: 'var(--fallback-bc,hsl(var(--bc))), 0.1)',
-                borderRadius: '12px',
-                border: '1px solid rgba(var(--fallback-bc,hsl(var(--bc))), 0.1)',
+                background: "#0f172a",
+                color: "#ffffff",
+                borderRadius: "16px",
+                padding: "12px 18px",
+                fontSize: "14px",
+                fontWeight: "600",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+              },
+              success: {
+                duration: 3500,
+                style: {
+                  background: "#064e3b",
+                  color: "#ffffff",
+                  borderRadius: "16px",
+                  padding: "12px 18px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  border: "1px solid #10b981",
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+                },
+                iconTheme: {
+                  primary: "#10b981",
+                  secondary: "#ffffff",
+                },
+              },
+              error: {
+                duration: 4000,
+                style: {
+                  background: "#7f1d1d",
+                  color: "#ffffff",
+                  borderRadius: "16px",
+                  padding: "12px 18px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  border: "1px solid #ef4444",
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)",
+                },
+                iconTheme: {
+                  primary: "#ef4444",
+                  secondary: "#ffffff",
+                },
               },
             }}
           />
+
           <Navbar />
           <CartSidebar />
           <main className="min-h-[85vh]">{children}</main>

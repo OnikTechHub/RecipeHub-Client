@@ -49,6 +49,16 @@ const DIETARY_OPTIONS = [
   { id: "Gluten-Free", label: "Gluten-Free 🌾" },
 ];
 
+const CUISINE_OPTIONS = [
+  "Italian", "Mexican", "Bangladeshi", "Indian",
+  "Asian", "American", "Mediterranean", "Middle Eastern",
+  "French", "Japanese"
+];
+
+const PREP_TIME_OPTIONS = ["15 mins", "20 mins", "25 mins", "30 mins", "45 mins", "60 mins"];
+
+const DIFFICULTY_OPTIONS = ["Easy", "Medium", "Hard"];
+
 export default function AIRecipeGenerator() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const router = useRouter();
@@ -64,7 +74,11 @@ export default function AIRecipeGenerator() {
   const [customIng, setCustomIng] = useState("");
   const [mealType, setMealType] = useState("Dinner");
   const [dietaryPreference, setDietaryPreference] = useState("None");
+  const [cuisine, setCuisine] = useState("Italian");
+  const [preparationTime, setPreparationTime] = useState("20 mins");
+  const [difficulty, setDifficulty] = useState("Easy");
   const [servings, setServings] = useState(2);
+
 
 
   // Monetization & Saving States
@@ -237,8 +251,12 @@ export default function AIRecipeGenerator() {
           ingredients,
           dietaryPreference,
           mealType,
+          cuisine,
+          prepTime: preparationTime,
+          difficulty,
           servings: Number(servings) || 2,
         }),
+
 
       });
 
@@ -307,9 +325,13 @@ export default function AIRecipeGenerator() {
         authorEmail: currentUser.email,
         userEmail: currentUser.email,
         category: [stdCategory],
-        cuisine: mealType,
-        prepTime: recipe.prepTime,
-        cookTime: recipe.cookTime,
+        cuisine: recipe.cuisine || cuisine || mealType,
+        cuisineType: recipe.cuisine || cuisine || mealType,
+        prepTime: recipe.prepTime || recipe.preparationTime || preparationTime || "20 mins",
+        preparationTime: recipe.preparationTime || recipe.prepTime || preparationTime || "20 mins",
+        cookTime: recipe.cookTime || "18 mins",
+        difficulty: recipe.difficulty || difficulty || "Easy",
+        difficultyLevel: recipe.difficulty || difficulty || "Easy",
         recipeImage: recipe.image || recipe.recipeImage,
         image: recipe.image || recipe.recipeImage,
         price: priceVal,
@@ -321,6 +343,7 @@ export default function AIRecipeGenerator() {
         nutritionInfo: recipe.nutritionInfo,
         isAiGenerated: true,
       };
+
 
       const res = await fetch(`${SERVER_URL}/recipes`, {
         method: "POST",
@@ -596,10 +619,65 @@ export default function AIRecipeGenerator() {
               </div>
             </div>
 
+            {/* Cuisine Type / Country Selection */}
+            <div className="space-y-2">
+              <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
+                5. Cuisine Type / Country
+              </label>
+              <select
+                value={cuisine}
+                onChange={(e) => setCuisine(e.target.value)}
+                className="w-full bg-base-200 dark:bg-base-800 px-3.5 py-2.5 rounded-xl text-xs font-bold border border-base-300 dark:border-base-700 outline-none focus:border-primary transition-all"
+              >
+                {CUISINE_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c} Cuisine
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Preparation Time & Difficulty Level Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
+                  6. Prep Time
+                </label>
+                <select
+                  value={preparationTime}
+                  onChange={(e) => setPreparationTime(e.target.value)}
+                  className="w-full bg-base-200 dark:bg-base-800 px-3 py-2.5 rounded-xl text-xs font-bold border border-base-300 dark:border-base-700 outline-none focus:border-primary transition-all"
+                >
+                  {PREP_TIME_OPTIONS.map((pt) => (
+                    <option key={pt} value={pt}>
+                      ⏱️ {pt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
+                  7. Difficulty Level
+                </label>
+                <select
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
+                  className="w-full bg-base-200 dark:bg-base-800 px-3 py-2.5 rounded-xl text-xs font-bold border border-base-300 dark:border-base-700 outline-none focus:border-primary transition-all"
+                >
+                  {DIFFICULTY_OPTIONS.map((diff) => (
+                    <option key={diff} value={diff}>
+                      {diff === "Easy" ? "🌱 Easy" : diff === "Medium" ? "⚡ Medium" : "🔥 Hard"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* Servings Selector */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs font-extrabold uppercase tracking-wider text-base-content/70">
-                <label>5. Target Servings</label>
+                <label>8. Target Servings</label>
 
                 <span className="text-primary font-black text-sm">{servings} Servings</span>
               </div>
@@ -612,6 +690,7 @@ export default function AIRecipeGenerator() {
                 className="range range-primary range-xs"
               />
             </div>
+
 
             {/* Generate Action Button */}
             <button
