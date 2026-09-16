@@ -9,16 +9,26 @@ const PopularRecipes = () => {
     const [popularRecipes, setPopularRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const getLikesCount = (r) => {
+        if (!r) return 0;
+        if (typeof r.likesCount === "number") return r.likesCount;
+        if (Array.isArray(r.likedUsers)) return r.likedUsers.length;
+        if (typeof r.communityLikes === "number") return r.communityLikes;
+        if (typeof r.likes === "number") return r.likes;
+        return 0;
+    };
+
     useEffect(() => {
         const fetchPopular = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?sort=popular&limit=50`);
                 const data = await res.json();
 
-                if (data.success) {
-                   
-                    const sorted = [...data.data].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+                if (data.success && Array.isArray(data.data)) {
+                    // Sort descending globally by total likes count
+                    const sorted = [...data.data].sort((a, b) => getLikesCount(b) - getLikesCount(a));
+                    // Strictly limit to Top 4 recipes
                     setPopularRecipes(sorted.slice(0, 4));
                 }
             } catch (error) {
@@ -127,7 +137,7 @@ const PopularRecipes = () => {
                                             <span className="text-[11px] font-bold opacity-60 uppercase tracking-wider">Community Likes</span>
                                             <div className="flex items-center gap-1.5 text-xs font-black text-rose-500">
                                                 <FaHeart className="animate-pulse" />
-                                                <span>{recipe.likesCount || 0} Likes</span>
+                                                <span>{getLikesCount(recipe)} Likes</span>
                                             </div>
                                         </div>
                                     </div>

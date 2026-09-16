@@ -4,8 +4,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-import { toast, Toaster } from "react-hot-toast";
-import { FaTrash, FaEye, FaClock, FaStar, FaCrown, FaHeart, FaArrowRight, FaHeartCrack } from "react-icons/fa6";
+import { useCart } from "@/context/CartContext";
+import { Toaster, toast } from "react-hot-toast";
+import { FaTrash, FaEye, FaClock, FaStar, FaCrown, FaHeart, FaArrowRight, FaLockOpen, FaLock } from "react-icons/fa6";
 import { FaHeartBroken } from "react-icons/fa";
 import { HashLoader } from "react-spinners";
 import Swal from "sweetalert2";
@@ -13,10 +14,12 @@ import Swal from "sweetalert2";
 const MyFavorites = () => {
     const { data: session } = authClient.useSession();
     const user = session?.user;
+    const { isPurchased, isAdmin, isPremiumUser } = useCart();
 
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
 
     useEffect(() => {
         if (user?.email) {
@@ -112,6 +115,11 @@ const MyFavorites = () => {
                         const prepTime = recipe.preparationTime || recipe.prepTime || "20 mins";
                         const ratings = recipe.ratings || 5.0;
                         const targetRecipeId = fav.recipeId || recipe._id;
+                        const authorEmail = recipe.authorEmail || fav.authorEmail;
+
+                        const owned = isPurchased(targetRecipeId, authorEmail);
+                        const isAuthor = Boolean(authorEmail && user?.email && authorEmail.toLowerCase().trim() === user.email.toLowerCase().trim());
+                        const isUnlockedForUser = owned || isAdmin || isAuthor || (!isPaid && isPremiumUser);
 
                         return (
                             <div
@@ -130,14 +138,18 @@ const MyFavorites = () => {
                                         {category}
                                     </span>
 
-                                    {/* Free vs Premium Badge */}
-                                    {isPaid ? (
+                                    {/* Access / Paywall Status Badge */}
+                                    {isUnlockedForUser ? (
+                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-teal-600 text-white shadow-md flex items-center gap-1 tracking-wider">
+                                            <FaLockOpen className="text-[9px]" /> UNLOCKED
+                                        </span>
+                                    ) : isPaid ? (
                                         <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500 text-white shadow-md flex items-center gap-1 tracking-wider">
-                                            <FaCrown className="text-[9px]" /> ${price}
+                                            <FaLock className="text-[9px]" /> LOCKED • ${price}
                                         </span>
                                     ) : (
-                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md tracking-wider">
-                                            Free
+                                        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-600 text-white shadow-md flex items-center gap-1 tracking-wider">
+                                            <FaLock className="text-[9px]" /> PRO REQUIRED
                                         </span>
                                     )}
                                 </div>
@@ -160,12 +172,28 @@ const MyFavorites = () => {
 
                                     {/* Footer Action Buttons */}
                                     <div className="flex items-center gap-2 pt-2 border-t border-base-300/40">
-                                        <Link
-                                            href={`/browse-recipes/${targetRecipeId}`}
-                                            className="btn btn-primary btn-sm flex-1 rounded-xl font-bold text-white normal-case gap-1.5 shadow-sm"
-                                        >
-                                            <FaEye className="text-xs" /> View Recipe
-                                        </Link>
+                                        {isUnlockedForUser ? (
+                                            <Link
+                                                href={`/browse-recipes/${targetRecipeId}`}
+                                                className="btn btn-primary btn-sm flex-1 rounded-xl font-bold text-white normal-case gap-1.5 shadow-sm"
+                                            >
+                                                <FaEye className="text-xs" /> View Recipe
+                                            </Link>
+                                        ) : isPaid ? (
+                                            <Link
+                                                href={`/browse-recipes/${targetRecipeId}`}
+                                                className="btn btn-warning btn-sm flex-1 rounded-xl font-bold text-slate-950 normal-case gap-1.5 shadow-sm"
+                                            >
+                                                <FaLock className="text-xs" /> Unlock Recipe (${price})
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={`/browse-recipes/${targetRecipeId}`}
+                                                className="btn btn-warning btn-sm flex-1 rounded-xl font-bold text-slate-950 normal-case gap-1.5 shadow-sm"
+                                            >
+                                                <FaCrown className="text-xs text-amber-900" /> Upgrade to Unlock
+                                            </Link>
+                                        )}
 
                                         <button
                                             onClick={() => handleDelete(fav._id, recipeName)}
@@ -179,6 +207,7 @@ const MyFavorites = () => {
                             </div>
                         );
                     })}
+
                 </div>
             )}
         </div>

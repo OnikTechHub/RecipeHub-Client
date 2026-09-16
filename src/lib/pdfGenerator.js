@@ -189,3 +189,170 @@ export const downloadReceiptPDF = (item, userEmail = "") => {
   // Download File
   doc.save(`RecipeHub_Receipt_${invoiceNo}.pdf`);
 };
+
+/**
+ * Generate and download a PDF document for Smart Grocery List.
+ * @param {Object} groceryData - Aggregated grocery list data with categories and recipe breakdown
+ * @param {string} userEmail - User's email address
+ */
+export const downloadGroceryListPDF = (groceryData, userEmail = "") => {
+  if (!groceryData) return;
+
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const emeraldColor = [16, 185, 129]; // #10B981
+  const darkColor = [15, 23, 42];      // #0F172A
+  const lightBg = [248, 250, 252];     // Light background
+  const textDark = [30, 41, 59];       // Dark text
+
+  // Header Banner
+  doc.setFillColor(...darkColor);
+  doc.rect(0, 0, 210, 38, "F");
+
+  // RecipeHub Title & Header Text
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("RecipeHub", 14, 18);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...emeraldColor);
+  doc.text("AI SMART GROCERY LIST & SHOPPING CHECKLIST", 14, 25);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(200, 200, 220);
+  doc.text(`Generated for: ${userEmail || "Gourmet Member"}  |  Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}`, 14, 32);
+
+  // Cost Estimate Banner Box
+  let y = 44;
+  doc.setFillColor(...lightBg);
+  doc.roundedRect(14, y, 182, 18, 3, 3, "F");
+  doc.setDrawColor(226, 232, 240);
+  doc.rect(14, y, 182, 18, "S");
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...textDark);
+  doc.text(`Selected Recipes: ${groceryData.selectedRecipesCount || 0}`, 20, y + 8);
+  doc.text(`Total Ingredients: ${groceryData.totalItemsCount || 0} items`, 85, y + 8);
+
+  doc.setTextColor(...emeraldColor);
+  doc.text(`Est. Cost: ${groceryData.estimatedCost || "$0.00"} USD`, 145, y + 8);
+
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 116, 139);
+  doc.text("Aisle-categorized list aggregated from verified active recipes.", 20, y + 14);
+
+  y += 24;
+
+  // Section 1: Per Recipe Breakdown
+  if (Array.isArray(groceryData.recipeBreakdown) && groceryData.recipeBreakdown.length > 0) {
+    doc.setFillColor(...emeraldColor);
+    doc.rect(14, y, 182, 7, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("SECTION 1: PER-RECIPE INGREDIENT BREAKDOWN", 18, y + 5);
+
+    y += 11;
+
+    groceryData.recipeBreakdown.forEach((r, idx) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 15;
+      }
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...textDark);
+      doc.text(`${idx + 1}. ${r.recipeName} (${Array.isArray(r.ingredients) ? r.ingredients.length : 0} items)`, 16, y);
+
+      y += 5;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105);
+
+      const ingArr = Array.isArray(r.ingredients) ? r.ingredients : [];
+      const ingText = ingArr.join("  •  ");
+      const lines = doc.splitTextToSize(ingText, 175);
+      doc.text(lines, 20, y);
+
+      y += lines.length * 4.5 + 4;
+    });
+
+    y += 4;
+  }
+
+  // Section 2: Supermarket Aisle Checklist
+  if (y > 240) {
+    doc.addPage();
+    y = 15;
+  }
+
+  doc.setFillColor(...darkColor);
+  doc.rect(14, y, 182, 7, "F");
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text("SECTION 2: SUPERMARKET AISLE CHECKLIST", 18, y + 5);
+
+  y += 12;
+
+  if (Array.isArray(groceryData.categories)) {
+    groceryData.categories.forEach((cat) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 15;
+      }
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...emeraldColor);
+      doc.text(`• ${cat.title.toUpperCase()} (${cat.items ? cat.items.length : 0} items)`, 16, y);
+
+      y += 5;
+
+      if (Array.isArray(cat.items)) {
+        cat.items.forEach((item) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 15;
+          }
+
+          // Checkbox square
+          doc.setDrawColor(148, 163, 184);
+          doc.rect(20, y - 3, 3.5, 3.5);
+
+          doc.setFontSize(8.5);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(...textDark);
+          const countLabel = item.count > 1 ? ` (x${item.count})` : "";
+          doc.text(`${item.name}${countLabel}`, 26, y);
+
+          y += 5;
+        });
+      }
+
+      y += 3;
+    });
+  }
+
+  // Footer
+  y = 282;
+  doc.setDrawColor(226, 232, 240);
+  doc.line(14, y, 196, y);
+
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(148, 163, 184);
+  doc.text("RecipeHub — Official AI Smart Grocery List Generator. www.recipehub.com", 105, y + 5, { align: "center" });
+
+  doc.save(`RecipeHub_Grocery_List_${new Date().toISOString().slice(0, 10)}.pdf`);
+};
+

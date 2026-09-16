@@ -33,11 +33,11 @@ const pricingTiers = [
     description: "Unlock all platform recipes, secret cooking instructions, and unlimited recipe uploads.",
     features: [
       "AI Smart Recipe Generator (Weekly 2 AI recipes)",
+      "AI Smart Grocery List & Price Estimator (Unlimited Access)",
       "Unlimited access to ALL Free & Premium recipes",
       "Full step-by-step cooking instructions & secret ingredients",
       "Unlimited recipe creation & publishing",
       "Ad-free browsing & distraction-free cooking mode",
-      "Interactive meal planner & grocery list tools",
       "Priority customer & creator support"
     ],
     cta: "Get Premium Lifetime Access",
@@ -312,6 +312,11 @@ const PricingSection = () => {
                   <td className="font-semibold py-4">Recipe Creation Limit</td>
                   <td className="text-center py-4 opacity-70">Max 2 Uploads</td>
                   <td className="text-center py-4 text-success font-bold">✓ Unlimited Recipe Uploads</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold py-4">AI Smart Grocery List & Price Estimator</td>
+                  <td className="text-center py-4 opacity-50">✕ Locked</td>
+                  <td className="text-center py-4 text-emerald-500 font-extrabold">✓ Unlimited Access (AI Powered)</td>
                 </tr>
                 <tr>
                   <td className="font-semibold py-4">Ad-Free & Distraction-Free Mode</td>
