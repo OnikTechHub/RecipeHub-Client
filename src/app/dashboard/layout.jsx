@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import {
   FaChartPie, FaUtensils, FaPlusCircle, FaHeart,
   FaShoppingBag, FaUserCircle, FaUsers, FaFlag,
-  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome, FaUserShield, FaCog, FaMagic, FaShoppingCart
+  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome, FaUserShield, FaCog, FaMagic, FaShoppingCart, FaStar
 } from "react-icons/fa";
 
 import { HashLoader } from "react-spinners";
@@ -174,6 +174,9 @@ export default function DashboardLayout({ children }) {
                 </Link>
                 <Link href="/dashboard/manage-recipes" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/manage-recipes")}`}>
                   <FaUtensils className="text-lg" /> Manage Recipes
+                </Link>
+                <Link href="/dashboard/manage-reviews" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/manage-reviews")}`}>
+                  <FaStar className="text-lg text-amber-500" /> Manage Testimonials
                 </Link>
                 <Link href="/dashboard/reports" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/reports")}`}>
                   <FaFlag className="text-lg" /> Reports
