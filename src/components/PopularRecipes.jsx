@@ -4,6 +4,7 @@ import { FaUtensils, FaHeart, FaUser, FaFire } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Link from "next/link"; 
 import { HashLoader } from "react-spinners"; 
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const PopularRecipes = () => {
     const [popularRecipes, setPopularRecipes] = useState([]);
@@ -22,7 +23,7 @@ const PopularRecipes = () => {
         const fetchPopular = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?sort=popular&limit=50`);
+                const res = await fetch(`${SERVER_URL}/recipes?sort=popular&limit=50`);
                 const data = await res.json();
 
                 if (data.success && Array.isArray(data.data)) {

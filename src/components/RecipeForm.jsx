@@ -2,6 +2,7 @@
 "use client";
 import React from "react";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const RecipeForm = ({
   formData,
@@ -12,7 +13,6 @@ const RecipeForm = ({
   disabled = false,
 }) => {
   const [commissionRate, setCommissionRate] = React.useState(20);
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   React.useEffect(() => {
     fetch(`${SERVER_URL}/pricing-plans`)

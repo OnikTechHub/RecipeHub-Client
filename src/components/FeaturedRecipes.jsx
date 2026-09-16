@@ -4,6 +4,8 @@ import { FaUtensils, FaClock, FaGlobe, FaTags } from "react-icons/fa";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
+
 const FeaturedRecipes = () => {
     const [featuredRecipes, setFeaturedRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ const FeaturedRecipes = () => {
         const fetchFeatured = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/featured-recipes?limit=8`);
+                const res = await fetch(`${SERVER_URL}/featured-recipes?limit=8`);
                 const data = await res.json();
 
                 if (data.success && Array.isArray(data.data)) {

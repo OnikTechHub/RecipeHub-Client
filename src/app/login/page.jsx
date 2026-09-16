@@ -9,11 +9,13 @@ import {
   FaEyeSlash,
   FaArrowRight,
   FaUtensils,
+  FaCircleExclamation,
 } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { SERVER_URL } from "@/lib/apiConfig";
 import ForgotPasswordModal from "@/components/ForgotPasswordModal";
 import { HashLoader } from "react-spinners";
 
@@ -23,9 +25,8 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const { data: session } = authClient.useSession();
 
@@ -71,64 +72,116 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError("");
+
+    const targetEmail = email.trim().toLowerCase();
+
+    // 1. Client-Side Input Validations
+    if (!targetEmail || !password) {
+      const msg = "Please enter both your email address and password.";
+      setLoginError(msg);
+      toast.error(msg, {
+        duration: 4000,
+        style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(targetEmail)) {
+      const msg = "Please enter a valid email address.";
+      setLoginError(msg);
+      toast.error(msg, {
+        duration: 4000,
+        style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
+      });
+      return;
+    }
 
     try {
       setLoading(true);
-      const targetEmail = email.trim().toLowerCase();
 
-      // 1. Check if user account exists in database
-      const roleRes = await fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(targetEmail)}`);
-      const roleData = await roleRes.json();
-
-      if (roleRes.status === 404 || !roleData.success || roleData.message?.includes("not found")) {
-        toast.error("No account found with this email. Please register first.", {
-          duration: 4000,
-          style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
-        });
-        setLoading(false);
-        return;
-      }
-
-      // 2. Email exists in database, attempt password sign in
+      // 2. Perform Authentication via Better-Auth
       const { data, error } = await authClient.signIn.email({
         email: targetEmail,
         password: password,
       });
 
       if (error) {
-        toast.error("Invalid password. Please try again.", {
-          duration: 4000,
+        let errorMsg = "Invalid email or password. Please check your credentials.";
+        if (error.message) {
+          const lower = error.message.toLowerCase();
+          if (lower.includes("not found") || lower.includes("no user") || lower.includes("cannot find")) {
+            errorMsg = "No account found with this email. Please register first.";
+          } else if (lower.includes("password") || lower.includes("credential") || lower.includes("invalid")) {
+            errorMsg = "Invalid email or password. Please check your credentials.";
+          } else if (lower.includes("rate") || lower.includes("too many")) {
+            errorMsg = "Too many login attempts. Please wait a few minutes before trying again.";
+          } else if (lower.includes("blocked")) {
+            errorMsg = "This account has been blocked by the Administrator.";
+          } else {
+            errorMsg = error.message;
+          }
+        }
+
+        setLoginError(errorMsg);
+        toast.error(errorMsg, {
+          duration: 4500,
           style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
         });
-      } else {
-        toast.success("Welcome Back! Login Successful.", {
-          duration: 3000,
-          style: { borderRadius: "12px", background: "#F97316", color: "#fff", fontWeight: "600" },
-        });
+        return;
+      }
 
-        // Trigger Login Success Email Notification in background (non-blocking)
-        fetch(`${SERVER_URL}/api/auth/login-notification`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: targetEmail }),
-        }).catch((notifyErr) => {
-          console.warn("Login notification trigger failed:", notifyErr.message);
-        });
-
-        setEmail("");
-        setPassword("");
-
-        const redirected = await checkAndExecutePendingCheckout();
-        if (!redirected) {
-          setTimeout(() => {
-            router.push("/dashboard");
-          }, 1200);
+      // 3. Check if user account is blocked on platform
+      try {
+        const roleRes = await fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(targetEmail)}`);
+        const roleData = await roleRes.json();
+        if (roleData?.isBlocked) {
+          await authClient.signOut();
+          const blockedMsg = "This account has been blocked by the Administrator.";
+          setLoginError(blockedMsg);
+          toast.error(blockedMsg, {
+            duration: 5000,
+            style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
+          });
+          return;
         }
+      } catch (roleErr) {
+        console.warn("Role check notification warning:", roleErr.message);
+      }
+
+      // 4. Login Successful
+      setLoginError("");
+      toast.success("Welcome Back! Login Successful.", {
+        duration: 3000,
+        style: { borderRadius: "12px", background: "#F97316", color: "#fff", fontWeight: "600" },
+      });
+
+      // Trigger Login Success Email Notification in background (non-blocking)
+      fetch(`${SERVER_URL}/api/auth/login-notification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail }),
+      }).catch((notifyErr) => {
+        console.warn("Login notification trigger failed:", notifyErr.message);
+      });
+
+      setEmail("");
+      setPassword("");
+
+      const redirected = await checkAndExecutePendingCheckout();
+      if (!redirected) {
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1200);
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("An unexpected error occurred.", {
-        style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+      const catchMsg = err.message || "An unexpected error occurred. Please try again.";
+      setLoginError(catchMsg);
+      toast.error(catchMsg, {
+        duration: 4500,
+        style: { borderRadius: "12px", background: "#262626", color: "#F87171", fontWeight: "600" },
       });
     } finally {
       setLoading(false);
@@ -185,6 +238,14 @@ const LoginPage = () => {
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-4">
+            {/* Visual Error Alert Banner */}
+            {loginError && (
+              <div className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-error text-xs font-semibold flex items-center gap-2.5">
+                <FaCircleExclamation className="shrink-0 text-base" />
+                <span className="leading-snug">{loginError}</span>
+              </div>
+            )}
+
             {/* Email Input */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-base-content/60 pl-1">
@@ -198,7 +259,10 @@ const LoginPage = () => {
                   disabled={loading}
                   placeholder="Enter Your Email Address"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (loginError) setLoginError("");
+                  }}
                   className={inputClass}
                 />
               </div>
@@ -226,7 +290,10 @@ const LoginPage = () => {
                   disabled={loading}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (loginError) setLoginError("");
+                  }}
                   className={`${inputClass} pr-10`}
                 />
               </div>

@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import RecipeForm from "@/components/RecipeForm"; 
 import { HashLoader } from "react-spinners"; 
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const AddRecipePage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -30,8 +31,6 @@ const AddRecipePage = () => {
     const [isPremium, setIsPremium] = useState(false);
 
     const [userRole, setUserRole] = useState("user");
-
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
         const fetchUserStats = async () => {

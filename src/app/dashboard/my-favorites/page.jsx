@@ -10,6 +10,7 @@ import { FaTrash, FaEye, FaClock, FaStar, FaCrown, FaHeart, FaArrowRight, FaLock
 import { FaHeartBroken } from "react-icons/fa";
 import { HashLoader } from "react-spinners";
 import Swal from "sweetalert2";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const MyFavorites = () => {
     const { data: session } = authClient.useSession();
@@ -18,7 +19,6 @@ const MyFavorites = () => {
 
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 
     useEffect(() => {

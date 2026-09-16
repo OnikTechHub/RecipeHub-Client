@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const ProfilePage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -16,8 +17,6 @@ const ProfilePage = () => {
     const [updating, setUpdating] = useState(false);
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [dbIsPremium, setDbIsPremium] = useState(false);
-
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
         if (session?.user) {

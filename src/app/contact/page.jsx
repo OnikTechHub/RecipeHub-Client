@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { FaEnvelope, FaPhone, FaLocationDot, FaPaperPlane, FaClock, FaCommentDots, FaUtensils } from "react-icons/fa6";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/contact`, {
+      const response = await fetch(`${SERVER_URL}/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

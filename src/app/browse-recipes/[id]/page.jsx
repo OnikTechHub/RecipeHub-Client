@@ -18,6 +18,7 @@ import RecipeReviewSection from "@/components/RecipeReviewSection";
 import { authClient } from "@/lib/auth-client";
 import { HashLoader } from "react-spinners";
 import { useCart } from "@/context/CartContext";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const RecipeDetailsPage = ({ params }) => {
   const unwrappedParams = use(params);
@@ -32,7 +33,6 @@ const RecipeDetailsPage = ({ params }) => {
 
   const { data: session, isPending } = authClient.useSession();
   const currentUserEmail = session?.user?.email;
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   // Fetch recipe details from DB
   const fetchRecipeDetails = async () => {

@@ -4,6 +4,7 @@ import { FaKey, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRotateRig
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP + New Password
@@ -14,8 +15,6 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const handleSendCode = async (e) => {
     e.preventDefault();

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FaCheck, FaCrown, FaWandSparkles, FaUtensils, FaCircleQuestion, FaCreditCard } from "react-icons/fa6";
 import { authClient } from "@/lib/auth-client";
 import toast, { Toaster } from "react-hot-toast";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const pricingTiers = [
   {
@@ -74,7 +75,6 @@ const PricingSection = () => {
   const [openFaq, setOpenFaq] = useState(null);
   const [dynamicTiers, setDynamicTiers] = useState(pricingTiers);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchDynamicPlans = async () => {

@@ -4,6 +4,7 @@ import { FaUserSlash, FaUserCheck, FaCrown, FaUserShield, FaUser, FaUserMinus } 
 import Swal from "sweetalert2";
 import { HashLoader } from "react-spinners";
 import Pagination from "@/components/Pagination";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageUsers() {
     const [users, setUsers] = useState([]);
@@ -19,7 +20,7 @@ export default function ManageUsers() {
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users?page=${currentPage}&limit=${limit}`);
+            const res = await fetch(`${SERVER_URL}/admin/users?page=${currentPage}&limit=${limit}`);
             const data = await res.json();
             if (data.success) {
                 setUsers(data.data || []);
@@ -54,7 +55,7 @@ export default function ManageUsers() {
 
         if (confirm.isConfirmed) {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/role/${id}`, {
+                const res = await fetch(`${SERVER_URL}/admin/users/role/${id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ role: targetRole }),
@@ -81,7 +82,7 @@ export default function ManageUsers() {
     // Users block function
     const handleBlockUser = async (id, name) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/block/${id}`, {
+            const res = await fetch(`${SERVER_URL}/admin/users/block/${id}`, {
                 method: "PATCH",
             });
             const data = await res.json();
@@ -102,7 +103,7 @@ export default function ManageUsers() {
     // Users unblock function
     const handleUnblockUser = async (id, name) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/unblock/${id}`, {
+            const res = await fetch(`${SERVER_URL}/admin/users/unblock/${id}`, {
                 method: "PATCH",
             });
             const data = await res.json();

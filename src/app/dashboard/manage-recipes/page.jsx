@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import EditRecipeModal from "@/components/EditRecipeModal"; 
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageRecipes() {
     const [recipes, setRecipes] = useState([]);
@@ -33,7 +34,7 @@ export default function ManageRecipes() {
         try {
             setLoading(true);
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes?page=${currentPage}&limit=${limit}`
+                `${SERVER_URL}/admin/recipes?page=${currentPage}&limit=${limit}`
             );
             const data = await res.json();
             if (data.success) {
@@ -80,7 +81,7 @@ export default function ManageRecipes() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes/${id}`, { method: "DELETE" });
+                    const res = await fetch(`${SERVER_URL}/admin/recipes/${id}`, { method: "DELETE" });
                     const data = await res.json();
                     if (data.success) {
                         setRecipes(recipes.filter(recipe => recipe._id !== id));
@@ -97,7 +98,7 @@ export default function ManageRecipes() {
     const handleToggleFeature = async (id, currentStatus, title) => {
         const newStatus = !currentStatus;
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes/feature/${id}`, {
+            const res = await fetch(`${SERVER_URL}/admin/recipes/feature/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ isFeatured: newStatus }),
@@ -115,7 +116,7 @@ export default function ManageRecipes() {
 
     const handleUpdateSubmit = async (updatedData) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/recipes/${activeEditRecipe._id}`, {
+            const res = await fetch(`${SERVER_URL}/admin/recipes/${activeEditRecipe._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedData), 

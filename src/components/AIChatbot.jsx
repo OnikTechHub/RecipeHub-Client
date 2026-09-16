@@ -15,6 +15,7 @@ import {
   FaCopy,
   FaCheck,
 } from "react-icons/fa6";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 // Cute Lottie Animation Data for AI Robot
 const robotLottieAnimation = {
@@ -141,8 +142,6 @@ export default function AIChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
   const messagesEndRef = useRef(null);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const handleCopyMessage = (text, idx) => {
     if (!text) return;

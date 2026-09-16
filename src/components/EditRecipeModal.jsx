@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { FaCrown, FaDollarSign, FaXmark } from "react-icons/fa6";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const EditRecipeModal = ({ recipe, onClose, onUpdate }) => {
     const [name, setName] = useState("");
@@ -10,7 +11,6 @@ const EditRecipeModal = ({ recipe, onClose, onUpdate }) => {
     const [isPaid, setIsPaid] = useState(false);
     const [price, setPrice] = useState(0);
     const [commissionRate, setCommissionRate] = useState(20);
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
     useEffect(() => {
         fetch(`${SERVER_URL}/pricing-plans`)

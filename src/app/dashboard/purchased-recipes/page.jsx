@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
 import { downloadReceiptPDF } from "@/lib/pdfGenerator";
 import { useCart } from "@/context/CartContext";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const MyPurchasedRecipesPage = () => {
     const [purchasedItems, setPurchasedItems] = useState([]);
@@ -28,8 +29,6 @@ const MyPurchasedRecipesPage = () => {
     const { data: session, isPending } = authClient.useSession();
     const currentUserEmail = session?.user?.email;
     const currentUserId = session?.user?.id || session?.user?._id;
-
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const { clearCart, fetchPurchasedIds } = useCart();
 

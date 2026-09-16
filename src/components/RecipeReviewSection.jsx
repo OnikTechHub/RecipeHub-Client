@@ -2,14 +2,13 @@
 import React, { useState } from "react";
 import { FaStar, FaPaperPlane, FaUser, FaQuoteLeft, FaCircleCheck } from "react-icons/fa6";
 import toast from "react-hot-toast";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function RecipeReviewSection({ recipeId, reviews = [], ratings = 5.0, reviewCount = 0, currentUser, onReviewAdded }) {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

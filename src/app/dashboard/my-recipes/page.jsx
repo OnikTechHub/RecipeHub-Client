@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { FaEye } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const MyRecipesPage = () => {
     const { data: session, isPending } = authClient.useSession();
@@ -33,7 +34,6 @@ const MyRecipesPage = () => {
     const [uploadingImage, setUploadingImage] = useState(false);
 
     const [commissionRate, setCommissionRate] = useState(20);
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
     const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
     useEffect(() => {

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { SERVER_URL } from "@/lib/apiConfig";
 import toast from "react-hot-toast";
 import {
   FaWandSparkles,
@@ -104,8 +105,6 @@ export default function AIRecipeGenerator() {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   // Fetch Dynamic Pricing Plan from Server
   useEffect(() => {

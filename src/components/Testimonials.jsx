@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaStar, FaQuoteLeft, FaCircleCheck, FaUtensils } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const DEFAULT_FALLBACK_TESTIMONIALS = [
   {
@@ -38,8 +39,6 @@ const DEFAULT_FALLBACK_TESTIMONIALS = [
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState(DEFAULT_FALLBACK_TESTIMONIALS);
   const [loading, setLoading] = useState(true);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchFeaturedTestimonials = async () => {

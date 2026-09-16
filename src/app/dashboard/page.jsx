@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast"; 
 import { HashLoader } from "react-spinners"; 
+import { SERVER_URL } from "@/lib/apiConfig";
 
 import AdminOverview from "@/components/AdminOverview";
 import UserOverview from "@/components/UserOverview";
@@ -23,7 +24,7 @@ export default function DashboardOverview() {
         const syncRoleAndFetchData = async () => {
             try {
                 const email = session.user.email;
-                const roleRes = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/check-user-role?email=${email}`);
+                const roleRes = await fetch(`${SERVER_URL}/check-user-role?email=${email}`);
                 const roleData = await roleRes.json();
 
                 // Check for pending membership checkout (e.g. from homepage subscription button or social sign-in)
@@ -34,7 +35,7 @@ export default function DashboardOverview() {
                         style: { borderRadius: "12px", background: "#262626", color: "#fff" },
                     });
                     try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/create-checkout-session`, {
+                        const res = await fetch(`${SERVER_URL}/create-checkout-session`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             credentials: "include",
@@ -86,9 +87,9 @@ export default function DashboardOverview() {
                     setIsPremiumUser(session.user.isPremium || false);
                 }
 
-                let url = `${process.env.NEXT_PUBLIC_SERVER_URL}/user-stats?email=${email}`;
+                let url = `${SERVER_URL}/user-stats?email=${email}`;
                 if (currentRole === "admin") {
-                    url = `${process.env.NEXT_PUBLIC_SERVER_URL}/admin-stats`;
+                    url = `${SERVER_URL}/admin-stats`;
                 }
 
                 const statsRes = await fetch(url);

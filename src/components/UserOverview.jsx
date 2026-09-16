@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaUtensils, FaHeart, FaThumbsUp, FaCrown, FaUser, FaHandHoldingDollar, FaReceipt, FaChartLine } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const UserOverview = ({ stats, currentUser, isPremium }) => {
     const [loading, setLoading] = useState(false);
@@ -11,7 +12,6 @@ const UserOverview = ({ stats, currentUser, isPremium }) => {
         totalSales: 0,
         grossSalesVolume: 0,
     });
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
     useEffect(() => {
         if (currentUser?.email) {

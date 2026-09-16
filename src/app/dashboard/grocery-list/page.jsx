@@ -21,6 +21,7 @@ import {
   FaListCheck,
 } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function SmartGroceryListPage() {
   const { data: session, isPending } = authClient.useSession();
@@ -41,8 +42,6 @@ export default function SmartGroceryListPage() {
   const [groceryData, setGroceryData] = useState(null);
   const [checkedItems, setCheckedItems] = useState({});
   const [copied, setCopied] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   // Check live user status
   useEffect(() => {

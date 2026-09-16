@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children }) {
 
     if (session?.user?.email) {
       setCheckingRole(true);
-      fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/check-user-role?email=${encodeURIComponent(session.user.email)}`)
+      fetch(`${SERVER_URL}/check-user-role?email=${encodeURIComponent(session.user.email)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {

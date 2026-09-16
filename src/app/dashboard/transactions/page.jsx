@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { FaMoneyBillWave, FaHandHoldingDollar, FaBuildingColumns, FaReceipt, FaEye, FaXmark, FaCheckCircle, FaUser, FaCrown, FaUtensils } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const TransactionsPage = () => {
     const [transactions, setTransactions] = useState([]);
@@ -23,7 +24,7 @@ const TransactionsPage = () => {
 
     const fetchTransactions = () => {
         setLoading(true);
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/transactions?page=${currentPage}&limit=${limit}`)
+        fetch(`${SERVER_URL}/admin/transactions?page=${currentPage}&limit=${limit}`)
             .then((res) => res.json())
             .then((resData) => {
                 const list = resData.data || (Array.isArray(resData) ? resData : []);

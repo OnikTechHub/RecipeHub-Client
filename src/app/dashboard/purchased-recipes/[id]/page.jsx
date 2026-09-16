@@ -9,6 +9,7 @@ import {
     FaReceipt, FaCircleCheck, FaCalendarDays, FaHashtag, FaDollarSign
 } from "react-icons/fa6";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const PurchasedRecipeDetails = () => {
     const { id } = useParams();
@@ -22,8 +23,6 @@ const PurchasedRecipeDetails = () => {
     const [reportReason, setReportReason] = useState("Spam");
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
-
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
         if (!id || !currentUserEmail) return;

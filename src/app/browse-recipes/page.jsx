@@ -19,6 +19,7 @@ import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
 import { useCart } from "@/context/CartContext";
 import { authClient } from "@/lib/auth-client";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const BrowseRecipesContent = () => {
   const searchParams = useSearchParams();
@@ -70,7 +71,7 @@ const BrowseRecipesContent = () => {
         const emailParam = currentUserEmail || "";
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?search=${encodeURIComponent(
+          `${SERVER_URL}/recipes?search=${encodeURIComponent(
             searchQuery
           )}&category=${encodeURIComponent(
             categoryParam

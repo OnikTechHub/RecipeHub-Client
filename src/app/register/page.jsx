@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import OtpModal from "@/components/OtpModal";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -48,8 +49,6 @@ const RegisterPage = () => {
 
   // OTP Modal state
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   // Handle direct file upload via ImageBB API
   const handleFileUpload = async (e) => {

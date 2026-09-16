@@ -5,6 +5,7 @@ import { FaSearch } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { HashLoader } from "react-spinners";
 import Pagination from "@/components/Pagination";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageAdmins() {
     const [admins, setAdmins] = useState([]);
@@ -22,7 +23,7 @@ export default function ManageAdmins() {
         try {
             setLoading(true);
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/admins?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`
+                `${SERVER_URL}/admin/admins?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`
             );
             const data = await res.json();
             if (data.success) {
@@ -61,7 +62,7 @@ export default function ManageAdmins() {
 
         if (confirm.isConfirmed) {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/users/role/${id}`, {
+                const res = await fetch(`${SERVER_URL}/admin/users/role/${id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ role: "user" }),

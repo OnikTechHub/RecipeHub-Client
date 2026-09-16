@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { FaTrash, FaCheck, FaFlag, FaUtensils, FaUser, FaEye, FaXmark, FaClock, FaTriangleExclamation } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const AdminReports = () => {
     const [reports, setReports] = useState([]);
@@ -16,8 +17,6 @@ const AdminReports = () => {
     const [totalReports, setTotalReports] = useState(0);
     const [selectedReport, setSelectedReport] = useState(null);
     const limit = 8;
-
-    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const fetchReports = async () => {
         try {

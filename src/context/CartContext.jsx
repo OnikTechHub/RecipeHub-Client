@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const CartContext = createContext();
 
@@ -14,7 +15,6 @@ export const CartProvider = ({ children }) => {
 
   const { data: session } = authClient.useSession();
   const currentUser = session?.user;
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
   const [liveRole, setLiveRole] = useState(null);
   const [isLivePremium, setIsLivePremium] = useState(false);

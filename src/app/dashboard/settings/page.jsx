@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { FaPercent, FaFloppyDisk, FaRotateLeft, FaCoins, FaUserGear, FaShieldHalved, FaChartLine } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import { HashLoader } from "react-spinners";
+import { SERVER_URL } from "@/lib/apiConfig";
+
 const AdminSettingsPage = () => {
   const [commissionRate, setCommissionRate] = useState(20);
   const [proFoodiePrice, setProFoodiePrice] = useState(9.99);
@@ -14,8 +16,6 @@ const AdminSettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [updatedBy, setUpdatedBy] = useState("admin");
-
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
   // Fetch current commission rate and plan pricing from server
   const fetchSettings = async () => {
