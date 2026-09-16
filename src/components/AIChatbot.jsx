@@ -224,6 +224,7 @@ export default function AIChatbot() {
       const res = await fetch(`${SERVER_URL}/api/ai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           message: query.trim(),
           history: historyPayload,

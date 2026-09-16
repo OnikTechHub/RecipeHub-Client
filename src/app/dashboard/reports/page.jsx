@@ -7,9 +7,13 @@ import Swal from "sweetalert2";
 import { FaTrash, FaCheck, FaFlag, FaUtensils, FaUser, FaEye, FaXmark, FaClock, FaTriangleExclamation } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 const AdminReports = () => {
+    const { data: session } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +25,14 @@ const AdminReports = () => {
     const fetchReports = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${SERVER_URL}/admin/reports?page=${currentPage}&limit=${limit}`);
+            const emailParam = currentUserEmail ? `&email=${encodeURIComponent(currentUserEmail)}` : "";
+            const res = await axios.get(`${SERVER_URL}/admin/reports?page=${currentPage}&limit=${limit}${emailParam}`, {
+                headers: {
+                    "x-admin-email": currentUserEmail || "",
+                    "x-user-email": currentUserEmail || "",
+                },
+                withCredentials: true,
+            });
             if (res.data?.success && Array.isArray(res.data.data)) {
                 // Client-side grouping fallback by recipeId
                 const groupedMap = new Map();
@@ -48,7 +59,7 @@ const AdminReports = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [currentPage, SERVER_URL]);
+    }, [currentPage, currentUserEmail, SERVER_URL]);
 
     // Handle Delete Recipe completely (Recipe + all associated Reports)
     const handleDeleteRecipe = async (reportId, recipeId, recipeName) => {

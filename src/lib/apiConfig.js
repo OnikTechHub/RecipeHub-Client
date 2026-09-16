@@ -44,5 +44,18 @@ export const getServerUrl = () => {
     : "http://localhost:5000";
 };
 
-export const SERVER_URL = getServerUrl();
+class DynamicServerUrl extends String {
+  toString() {
+    return getServerUrl();
+  }
+  valueOf() {
+    return getServerUrl();
+  }
+}
+
+export const SERVER_URL =
+  typeof window !== "undefined"
+    ? getServerUrl()
+    : new DynamicServerUrl(getServerUrl());
+
 export default SERVER_URL;

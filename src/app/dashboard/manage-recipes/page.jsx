@@ -6,9 +6,13 @@ import toast from "react-hot-toast";
 import EditRecipeModal from "@/components/EditRecipeModal"; 
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageRecipes() {
+    const { data: session } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeEditRecipe, setActiveEditRecipe] = useState(null);
@@ -33,8 +37,16 @@ export default function ManageRecipes() {
     const loadRecipes = async () => {
         try {
             setLoading(true);
+            const emailParam = currentUserEmail ? `&email=${encodeURIComponent(currentUserEmail)}` : "";
             const res = await fetch(
-                `${SERVER_URL}/admin/recipes?page=${currentPage}&limit=${limit}`
+                `${SERVER_URL}/admin/recipes?page=${currentPage}&limit=${limit}${emailParam}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-admin-email": currentUserEmail || "",
+                        "x-user-email": currentUserEmail || "",
+                    },
+                    credentials: "include",
+                }
             );
             const data = await res.json();
             if (data.success) {
@@ -52,7 +64,7 @@ export default function ManageRecipes() {
 
     useEffect(() => {
         loadRecipes();
-    }, [currentPage]);
+    }, [currentPage, currentUserEmail]);
 
     // Filter recipes by searchQuery
     const filteredRecipes = recipes.filter((r) => {

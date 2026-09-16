@@ -157,7 +157,12 @@ export default function AIRecipeGenerator() {
   // Fetch AI Weekly Usage Status on load
   useEffect(() => {
     if (currentUser?.email && isPremium) {
-      fetch(`${SERVER_URL}/api/ai/usage?email=${encodeURIComponent(currentUser.email)}`)
+      fetch(`${SERVER_URL}/api/ai/usage?email=${encodeURIComponent(currentUser.email)}`, {
+        credentials: "include",
+        headers: {
+          "x-user-email": currentUser?.email || "",
+        },
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -243,7 +248,11 @@ export default function AIRecipeGenerator() {
     try {
       const res = await fetch(`${SERVER_URL}/api/ai/generate-recipe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": currentUser?.email || "",
+        },
+        credentials: "include",
         body: JSON.stringify({
           userEmail: currentUser?.email,
           recipeIdea: recipeIdea.trim(),
@@ -255,8 +264,6 @@ export default function AIRecipeGenerator() {
           difficulty,
           servings: Number(servings) || 2,
         }),
-
-
       });
 
       const data = await res.json();

@@ -4,9 +4,13 @@ import toast from "react-hot-toast";
 import { FaMoneyBillWave, FaHandHoldingDollar, FaBuildingColumns, FaReceipt, FaEye, FaXmark, FaCheckCircle, FaUser, FaCrown, FaUtensils } from "react-icons/fa6";
 import Pagination from "@/components/Pagination";
 import { HashLoader } from "react-spinners";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 const TransactionsPage = () => {
+    const { data: session } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -24,7 +28,15 @@ const TransactionsPage = () => {
 
     const fetchTransactions = () => {
         setLoading(true);
-        fetch(`${SERVER_URL}/admin/transactions?page=${currentPage}&limit=${limit}`)
+        const emailParam = currentUserEmail ? `&email=${encodeURIComponent(currentUserEmail)}` : "";
+        fetch(`${SERVER_URL}/admin/transactions?page=${currentPage}&limit=${limit}${emailParam}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "x-admin-email": currentUserEmail || "",
+                "x-user-email": currentUserEmail || "",
+            },
+            credentials: "include",
+        })
             .then((res) => res.json())
             .then((resData) => {
                 const list = resData.data || (Array.isArray(resData) ? resData : []);
@@ -45,15 +57,15 @@ const TransactionsPage = () => {
                 setLoading(false);
             })
             .catch((err) => {
-                console.error("Failed to load transactions", err);
-                toast.error("Failed to load transactions");
+                console.error("Error fetching transactions:", err);
+                toast.error("Failed to load transactions.");
                 setLoading(false);
             });
     };
 
     useEffect(() => {
         fetchTransactions();
-    }, [currentPage]);
+    }, [currentPage, currentUserEmail]);
 
     if (loading) {
         return (

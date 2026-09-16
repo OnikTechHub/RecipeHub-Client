@@ -5,9 +5,13 @@ import { FaSearch } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { HashLoader } from "react-spinners";
 import Pagination from "@/components/Pagination";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageAdmins() {
+    const { data: session } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -22,8 +26,16 @@ export default function ManageAdmins() {
     const loadAdmins = async () => {
         try {
             setLoading(true);
+            const emailParam = currentUserEmail ? `&email=${encodeURIComponent(currentUserEmail)}` : "";
             const res = await fetch(
-                `${SERVER_URL}/admin/admins?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`
+                `${SERVER_URL}/admin/admins?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(searchQuery)}${emailParam}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-admin-email": currentUserEmail || "",
+                        "x-user-email": currentUserEmail || "",
+                    },
+                    credentials: "include",
+                }
             );
             const data = await res.json();
             if (data.success) {
@@ -40,7 +52,7 @@ export default function ManageAdmins() {
 
     useEffect(() => {
         loadAdmins();
-    }, [currentPage, searchQuery]);
+    }, [currentPage, searchQuery, currentUserEmail]);
 
     // Handle Search Submission / Instant change
     const handleSearchChange = (e) => {

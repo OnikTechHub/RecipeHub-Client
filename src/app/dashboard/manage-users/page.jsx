@@ -4,9 +4,13 @@ import { FaUserSlash, FaUserCheck, FaCrown, FaUserShield, FaUser, FaUserMinus } 
 import Swal from "sweetalert2";
 import { HashLoader } from "react-spinners";
 import Pagination from "@/components/Pagination";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function ManageUsers() {
+    const { data: session } = authClient.useSession();
+    const currentUserEmail = session?.user?.email;
+
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,7 +24,15 @@ export default function ManageUsers() {
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${SERVER_URL}/admin/users?page=${currentPage}&limit=${limit}`);
+            const emailParam = currentUserEmail ? `&email=${encodeURIComponent(currentUserEmail)}` : "";
+            const res = await fetch(`${SERVER_URL}/admin/users?page=${currentPage}&limit=${limit}${emailParam}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-email": currentUserEmail || "",
+                    "x-user-email": currentUserEmail || "",
+                },
+                credentials: "include",
+            });
             const data = await res.json();
             if (data.success) {
                 setUsers(data.data || []);
@@ -36,7 +48,7 @@ export default function ManageUsers() {
 
     useEffect(() => {
         loadUsers();
-    }, [currentPage]);
+    }, [currentPage, currentUserEmail]);
 
     // Dynamic Role Update (Promote to Admin / Demote to User)
     const handleUpdateRole = async (id, targetRole, name) => {

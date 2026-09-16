@@ -15,11 +15,14 @@ import { SERVER_URL } from "@/lib/apiConfig";
 const MyFavorites = () => {
     const { data: session } = authClient.useSession();
     const user = session?.user;
-    const { isPurchased, isAdmin, isPremiumUser } = useCart();
+    const { isPurchased, isAdmin, isPremiumUser, fetchPurchasedIds } = useCart();
 
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        if (fetchPurchasedIds) fetchPurchasedIds();
+    }, [fetchPurchasedIds]);
 
     useEffect(() => {
         if (user?.email) {
@@ -115,9 +118,12 @@ const MyFavorites = () => {
                         const prepTime = recipe.preparationTime || recipe.prepTime || "20 mins";
                         const ratings = recipe.ratings || 5.0;
                         const targetRecipeId = fav.recipeId || recipe._id;
-                        const authorEmail = recipe.authorEmail || fav.authorEmail;
+                        const authorEmail = recipe.authorEmail || fav.authorEmail || recipe.userEmail || recipe.creatorEmail;
 
-                        const owned = isPurchased(targetRecipeId, authorEmail);
+                        const id1 = fav.recipeId ? fav.recipeId.toString() : null;
+                        const id2 = recipe._id ? recipe._id.toString() : null;
+
+                        const owned = (id1 && isPurchased(id1, authorEmail)) || (id2 && isPurchased(id2, authorEmail));
                         const isAuthor = Boolean(authorEmail && user?.email && authorEmail.toLowerCase().trim() === user.email.toLowerCase().trim());
                         const isUnlockedForUser = owned || isAdmin || isAuthor || (!isPaid && isPremiumUser);
 

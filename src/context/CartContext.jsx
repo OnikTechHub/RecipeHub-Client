@@ -120,11 +120,15 @@ export const CartProvider = ({ children }) => {
     if (
       userEmailLower &&
       authorEmail &&
-      authorEmail.toLowerCase() === userEmailLower
+      authorEmail.toLowerCase().trim() === userEmailLower
     ) {
       return true;
     }
-    return purchasedIds.includes(recipeId);
+
+    const strId = (typeof recipeId === "object" && recipeId._id ? recipeId._id : recipeId).toString().trim();
+    if (!strId) return false;
+
+    return purchasedIds.some((id) => id && id.toString().trim() === strId);
   };
 
   // Add recipe to cart

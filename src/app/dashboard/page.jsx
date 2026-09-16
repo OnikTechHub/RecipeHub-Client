@@ -89,10 +89,16 @@ export default function DashboardOverview() {
 
                 let url = `${SERVER_URL}/user-stats?email=${email}`;
                 if (currentRole === "admin") {
-                    url = `${SERVER_URL}/admin-stats`;
+                    url = `${SERVER_URL}/admin-stats?email=${email}`;
                 }
 
-                const statsRes = await fetch(url);
+                const statsRes = await fetch(url, {
+                    headers: {
+                        "x-admin-email": email,
+                        "x-user-email": email,
+                    },
+                    credentials: "include",
+                });
                 const statsData = await statsRes.json();
                 if (statsData.success) {
                     setStats(statsData.data);

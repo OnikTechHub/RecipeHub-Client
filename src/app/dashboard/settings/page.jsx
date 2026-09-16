@@ -4,9 +4,13 @@ import React, { useState, useEffect } from "react";
 import { FaPercent, FaFloppyDisk, FaRotateLeft, FaCoins, FaUserGear, FaShieldHalved, FaChartLine } from "react-icons/fa6";
 import { Toaster, toast } from "react-hot-toast";
 import { HashLoader } from "react-spinners";
+import { authClient } from "@/lib/auth-client";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 const AdminSettingsPage = () => {
+  const { data: session } = authClient.useSession();
+  const currentUserEmail = session?.user?.email;
+
   const [commissionRate, setCommissionRate] = useState(20);
   const [proFoodiePrice, setProFoodiePrice] = useState(9.99);
   const [masterChefPrice, setMasterChefPrice] = useState(19.99);
@@ -21,7 +25,15 @@ const AdminSettingsPage = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${SERVER_URL}/admin/settings`);
+      const emailParam = currentUserEmail ? `?email=${encodeURIComponent(currentUserEmail)}` : "";
+      const res = await fetch(`${SERVER_URL}/admin/settings${emailParam}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-email": currentUserEmail || "",
+          "x-user-email": currentUserEmail || "",
+        },
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success && data.settings) {
         setCommissionRate(data.settings.commissionRate !== undefined ? data.settings.commissionRate : 20);
@@ -42,7 +54,7 @@ const AdminSettingsPage = () => {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [currentUserEmail]);
 
   // Save updated settings to server
   const handleSaveSettings = async () => {

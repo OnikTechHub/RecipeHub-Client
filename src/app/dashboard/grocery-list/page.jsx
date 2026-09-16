@@ -177,7 +177,11 @@ export default function SmartGroceryListPage() {
     try {
       const res = await fetch(`${SERVER_URL}/api/ai/generate-grocery-list`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": currentUser?.email || "",
+        },
+        credentials: "include",
         body: JSON.stringify({
           recipeIds: selectedRecipeIds,
           userEmail: currentUser?.email,
