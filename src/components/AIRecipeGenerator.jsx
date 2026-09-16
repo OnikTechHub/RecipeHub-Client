@@ -59,11 +59,13 @@ export default function AIRecipeGenerator() {
   const [checkingRole, setCheckingRole] = useState(true);
 
   // Form Input States
+  const [recipeIdea, setRecipeIdea] = useState("");
   const [ingredients, setIngredients] = useState(["Chicken breast", "Spinach"]);
   const [customIng, setCustomIng] = useState("");
   const [mealType, setMealType] = useState("Dinner");
   const [dietaryPreference, setDietaryPreference] = useState("None");
   const [servings, setServings] = useState(2);
+
 
   // Monetization & Saving States
   const [isPaidSave, setIsPaidSave] = useState(false);
@@ -231,11 +233,13 @@ export default function AIRecipeGenerator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userEmail: currentUser?.email,
+          recipeIdea: recipeIdea.trim(),
           ingredients,
           dietaryPreference,
           mealType,
           servings: Number(servings) || 2,
         }),
+
       });
 
       const data = await res.json();
@@ -442,11 +446,42 @@ export default function AIRecipeGenerator() {
               </div>
             </div>
 
+            {/* Recipe Idea / Target Dish Input */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
+                  1. What do you want to make? (Optional)
+                </label>
+                {recipeIdea && (
+                  <button
+                    type="button"
+                    onClick={() => setRecipeIdea("")}
+                    className="text-[10px] font-bold text-error hover:underline cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={recipeIdea}
+                  onChange={(e) => setRecipeIdea(e.target.value)}
+                  placeholder="e.g. Creamy Tuscan Garlic Chicken, Spicy Ramen..."
+                  className="w-full bg-base-200 dark:bg-base-800 px-3.5 py-2.5 rounded-xl text-xs font-medium border border-base-300 dark:border-base-700 outline-none focus:border-primary transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-base-content/60 font-medium">
+                Type your desired dish name or idea. Chef AI will harmonize it with your ingredients & preferences!
+              </p>
+            </div>
+
             {/* Ingredients Selection */}
             <div className="space-y-3">
               <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
-                1. Available Ingredients ({ingredients.length})
+                2. Available Ingredients ({ingredients.length})
               </label>
+
 
               {/* Added Badges */}
               <div className="flex flex-wrap gap-2 min-h-[42px] p-2.5 bg-base-200/60 dark:bg-base-800/60 rounded-2xl border border-base-300/50 dark:border-base-700/50">
@@ -518,7 +553,7 @@ export default function AIRecipeGenerator() {
             {/* Meal Category Selection */}
             <div className="space-y-2">
               <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
-                2. Meal Category
+                3. Meal Category
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {MEAL_TYPES.map((m) => (
@@ -541,7 +576,7 @@ export default function AIRecipeGenerator() {
             {/* Dietary Preference Selection */}
             <div className="space-y-2">
               <label className="text-xs font-extrabold uppercase tracking-wider text-base-content/70 block">
-                3. Dietary Preference
+                4. Dietary Preference
               </label>
               <div className="flex flex-wrap gap-2">
                 {DIETARY_OPTIONS.map((d) => (
@@ -564,7 +599,8 @@ export default function AIRecipeGenerator() {
             {/* Servings Selector */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs font-extrabold uppercase tracking-wider text-base-content/70">
-                <label>4. Target Servings</label>
+                <label>5. Target Servings</label>
+
                 <span className="text-primary font-black text-sm">{servings} Servings</span>
               </div>
               <input
