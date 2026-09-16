@@ -37,6 +37,8 @@ const RegisterPage = () => {
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [termsError, setTermsError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Profile photo upload states
@@ -105,6 +107,7 @@ const RegisterPage = () => {
     setPasswordError("");
     setEmailError("");
     setPhotoError("");
+    setTermsError("");
 
     // 1. Mandatory Profile Image Check
     if (!photoUrl || !photoUrl.trim()) {
@@ -132,6 +135,15 @@ const RegisterPage = () => {
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match. Please ensure both passwords are identical.");
       toast.error("Passwords do not match.", {
+        style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+      });
+      return;
+    }
+
+    // 4. Terms & Conditions Agreement Check
+    if (!agreeTerms) {
+      setTermsError("You must accept the Terms of Service and Privacy Policy to create an account.");
+      toast.error("Please agree to the Terms of Service and Privacy Policy.", {
         style: { borderRadius: "12px", background: "#262626", color: "#fff" },
       });
       return;
@@ -555,6 +567,48 @@ const RegisterPage = () => {
             {passwordError && (
               <p className="text-xs text-error font-semibold pl-1 pt-0.5">
                 {passwordError}
+              </p>
+            )}
+          </div>
+
+          {/* Terms & Conditions Checkbox */}
+          <div className="space-y-1 pt-1">
+            <label className="flex items-start gap-2.5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => {
+                  setAgreeTerms(e.target.checked);
+                  if (termsError) setTermsError("");
+                }}
+                className="mt-0.5 h-4 w-4 rounded border-base-300 dark:border-white/20 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600 shrink-0"
+              />
+              <span className="text-xs text-base-content/75 select-none leading-snug">
+                I agree to the{" "}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+            {termsError && (
+              <p className="text-xs text-error font-semibold pl-1 pt-0.5">
+                {termsError}
               </p>
             )}
           </div>
