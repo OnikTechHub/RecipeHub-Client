@@ -1,14 +1,30 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaBookOpen, FaBasketShopping, FaUtensils, FaClock } from "react-icons/fa6";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 const Features = () => {
+    const [totalRecipes, setTotalRecipes] = useState(null);
+
+    useEffect(() => {
+        fetch(`${SERVER_URL}/api/public-stats`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.stats?.totalRecipes !== undefined) {
+                    setTotalRecipes(data.stats.totalRecipes);
+                }
+            })
+            .catch((err) => console.warn("Features stats fetch error:", err.message));
+    }, []);
+
+    const recipeTitle = totalRecipes !== null ? `${totalRecipes} Community Recipes` : "Curated Recipes";
+
     const features = [
         {
             icon: <FaBookOpen />,
-            title: "10k+ Premium Recipes",
-            desc: "Explore a vast collection of curated recipes from world-class chefs worldwide.",
+            title: recipeTitle,
+            desc: "Explore a growing collection of authentic, chef-curated recipes from worldwide cooks.",
             color: "from-orange-500 to-amber-500",
         },
         {
@@ -25,8 +41,8 @@ const Features = () => {
         },
         {
             icon: <FaClock />,
-            title: "30-Min Quick Meals",
-            desc: "No time? Discover delicious, high-quality dishes you can cook in under half an hour.",
+            title: "Quick Prep Meals",
+            desc: "No time? Discover delicious, high-quality dishes you can cook in minimal effort.",
             color: "from-rose-500 to-pink-500",
         },
     ];

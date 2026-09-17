@@ -20,7 +20,6 @@ import { FcGoogle } from "react-icons/fc";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
-import OtpModal from "@/components/OtpModal";
 import { HashLoader } from "react-spinners";
 import { SERVER_URL } from "@/lib/apiConfig";
 
@@ -46,9 +45,6 @@ const RegisterPage = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
-
-  // OTP Modal state
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
   // Handle direct file upload via ImageBB API
   const handleFileUpload = async (e) => {
@@ -100,8 +96,8 @@ const RegisterPage = () => {
     }
   };
 
-  // Step 1: Validate inputs and trigger Registration OTP
-  const handleInitiateRegister = async (e) => {
+  // Direct registration handler without OTP step
+  const handleRegister = async (e) => {
     e.preventDefault();
     setPasswordError("");
     setEmailError("");
@@ -155,113 +151,54 @@ const RegisterPage = () => {
     try {
       setLoading(true);
 
-      // Request OTP from backend (Backend validates unique email before sending OTP)
-      const res = await fetch(`${SERVER_URL}/api/auth/send-registration-otp`, {
+      // Direct User Registration with Better-Auth
+      const { data, error } = await authClient.signUp.email({
+        email: email.trim().toLowerCase(),
+        password: password,
+        name: name.trim(),
+        image: photoUrl || "",
+      });
+
+      if (error) {
+        if (error.message?.toLowerCase().includes("already") || error.message?.toLowerCase().includes("exist")) {
+          setEmailError("This email is already registered. Please login or use another email.");
+        }
+        toast.error(error.message || "Registration failed! Please try again.", {
+          duration: 4500,
+          style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+        });
+        return;
+      }
+
+      toast.success("Account Created Successfully! Redirecting to login...", {
+        duration: 3500,
+        style: { borderRadius: "12px", background: "#F97316", color: "#fff", fontWeight: "600" },
+      });
+
+      // Optional Welcome Email trigger
+      fetch(`${SERVER_URL}/api/auth/registration-success`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           name: name.trim(),
         }),
-      });
+      }).catch((err) => console.warn("Welcome email trigger skipped:", err.message));
 
-      const data = await res.json();
+      setName("");
+      setEmail("");
+      setPhotoUrl("");
+      setPassword("");
+      setConfirmPassword("");
 
-      if (data.success) {
-        setEmailError("");
-        toast.success("Verification code sent! Please check your email.");
-        setIsOtpModalOpen(true);
-      } else {
-        if (data.isDuplicate || data.message?.includes("already registered")) {
-          setEmailError(data.message || "This email is already registered. Please login or use another email.");
-        }
-        toast.error(data.message || "Could not send verification code.", {
-          duration: 4500,
-          style: { borderRadius: "12px", background: "#262626", color: "#fff" },
-        });
-      }
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
     } catch (err) {
-      console.error("Initiate register error:", err);
-      toast.error("Network error. Please try again.");
+      console.error("Direct register error:", err);
+      toast.error(err.message || "Network error. Please try again.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Step 2: Verify OTP and permanently create user account in Better-Auth
-  const handleVerifyOtpSuccess = async (otpCode) => {
-    // 1. Verify OTP with backend
-    const verifyRes = await fetch(`${SERVER_URL}/api/auth/verify-registration-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        otp: otpCode,
-      }),
-    });
-
-    const verifyData = await verifyRes.json();
-    if (!verifyData.success) {
-      toast.error(verifyData.message || "Invalid verification code.");
-      throw new Error(verifyData.message || "Invalid OTP");
-    }
-
-    // 2. Permanently register user with Better-Auth
-    const { data, error } = await authClient.signUp.email({
-      email: email.trim().toLowerCase(),
-      password: password,
-      name: name.trim(),
-      image: photoUrl || "",
-    });
-
-    if (error) {
-      toast.error(error.message || "Registration failed! Try again.");
-      throw new Error(error.message);
-    }
-
-    setIsOtpModalOpen(false);
-    toast.success("Account Created Successfully! Please login.", {
-      duration: 3500,
-      style: { borderRadius: "12px", background: "#F97316", color: "#fff", fontWeight: "600" },
-    });
-
-    // 3. Trigger Registration Success Welcome Email to user's real email
-    fetch(`${SERVER_URL}/api/auth/registration-success`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        name: name.trim(),
-      }),
-    }).catch((welcomeErr) => {
-      console.warn("Welcome email trigger failed:", welcomeErr.message);
-    });
-
-    setName("");
-    setEmail("");
-    setPhotoUrl("");
-    setPassword("");
-    setConfirmPassword("");
-
-    setTimeout(() => {
-      router.push("/login");
-    }, 1500);
-  };
-
-  // Resend OTP handler for modal
-  const handleResendOtp = async () => {
-    const res = await fetch(`${SERVER_URL}/api/auth/send-registration-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        name: name.trim(),
-      }),
-    });
-
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.message || "Failed to resend code");
     }
   };
 
@@ -453,7 +390,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Register Form */}
-        <form onSubmit={handleInitiateRegister} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4">
           {/* Full Name */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-base-content/60 pl-1">
@@ -622,7 +559,7 @@ const RegisterPage = () => {
               {loading ? (
                 <>
                   <HashLoader color="#ffffff" size={16} />
-                  <span>Sending Verification Code...</span>
+                  <span>Creating Account...</span>
                 </>
               ) : (
                 <>
@@ -661,15 +598,6 @@ const RegisterPage = () => {
           </Link>
         </p>
       </motion.div>
-
-      {/* OTP Verification Modal */}
-      <OtpModal
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-        email={email}
-        onVerifySuccess={handleVerifyOtpSuccess}
-        onResendOtp={handleResendOtp}
-      />
     </section>
   );
 };

@@ -21,14 +21,16 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.", {
+        style: { borderRadius: "12px", background: "#262626", color: "#fff" },
+      });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${SERVER_URL}/contact`, {
+      const response = await fetch(`${SERVER_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,17 +41,27 @@ export default function ContactPage() {
       const json = await response.json();
 
       if (json.success) {
-        toast.success(json.message || "Message sent successfully!", {
-          duration: 5000,
-          style: { borderRadius: "12px", background: "#262626", color: "#fff" }
-        });
+        toast.success(
+          "Thank you! Your message has been sent successfully. Our support team will get back to you soon.",
+          {
+            duration: 5000,
+            style: { borderRadius: "12px", background: "#10B981", color: "#fff", fontWeight: "600" },
+          }
+        );
+        // Reset form
         setFormData({ name: "", email: "", subject: "General Inquiry", message: "" });
       } else {
-        toast.error(json.message || "Failed to send message. Please try again.");
+        toast.error(json.message || "Failed to send message. Please try again later.", {
+          duration: 4500,
+          style: { borderRadius: "12px", background: "#EF4444", color: "#fff", fontWeight: "600" },
+        });
       }
     } catch (error) {
       console.error("Contact form submission error:", error);
-      toast.error("Connection error. Please check your internet or try again.");
+      toast.error("Failed to send message. Please try again later.", {
+        duration: 4500,
+        style: { borderRadius: "12px", background: "#EF4444", color: "#fff", fontWeight: "600" },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -244,7 +256,10 @@ export default function ContactPage() {
                 className="w-full py-4 px-6 rounded-2xl bg-primary text-white font-black text-base shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
-                  <span className="loading loading-spinner loading-sm"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="loading loading-spinner loading-sm"></span>
+                    <span>Sending Message...</span>
+                  </div>
                 ) : (
                   <>
                     <FaPaperPlane />

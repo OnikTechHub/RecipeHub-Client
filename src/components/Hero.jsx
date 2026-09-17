@@ -1,15 +1,23 @@
 "use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { FaMagnifyingGlass, FaFire, FaBowlFood } from "react-icons/fa6";
+import { FaFire, FaBowlFood } from "react-icons/fa6";
 import { motion } from "framer-motion";
+import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function Hero() {
-    const handleSearch = (e) => {
-        e.preventDefault();
-        const searchQuery = e.target.search.value;
-        alert(`Searching for recipes: ${searchQuery}`);
-    };
+    const [totalRecipes, setTotalRecipes] = useState(null);
 
+    useEffect(() => {
+        fetch(`${SERVER_URL}/api/public-stats`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.stats?.totalRecipes !== undefined) {
+                    setTotalRecipes(data.stats.totalRecipes);
+                }
+            })
+            .catch((err) => console.warn("Hero stats fetch error:", err.message));
+    }, []);
 
     const fadeInUp = {
         hidden: { opacity: 0, y: 30 },
@@ -49,7 +57,9 @@ export default function Hero() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-amber-400 border border-white/10 text-xs font-bold mb-6 shadow-lg"
                 >
                     <FaFire className="w-3.5 h-3.5 animate-pulse" />
-                    <span className="text-white">Over 10,000+ Premium Recipes</span>
+                    <span className="text-white">
+                        {totalRecipes !== null ? `${totalRecipes} Real-Time Community Recipes` : "Over 1,000+ Secret Recipes"}
+                    </span>
                 </motion.div>
 
                 {/* Perfect Centered Heading */}
@@ -70,30 +80,6 @@ export default function Hero() {
                 >
                     Explore a world of exquisite flavors, master secret culinary techniques, and organize your daily meals effortlessly with our interactive platform.
                 </motion.p>
-
-                {/* Search Bar */}
-                {/* <motion.form
-                    variants={fadeInUp}
-                    onSubmit={handleSearch}
-                    className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-black/40 backdrop-blur-xl rounded-2xl sm:rounded-full border border-white/10 shadow-2xl mb-10 focus-within:border-primary/50 transition-all duration-300"
-                >
-                    <div className="flex items-center gap-3 pl-4 w-full py-2 sm:py-0">
-                        <FaMagnifyingGlass className="text-white/40 w-4 h-4 shrink-0" />
-                        <input
-                            type="text"
-                            name="search"
-                            placeholder="Search recipes, ingredients, or cuisines..."
-                            className="w-full bg-transparent text-sm text-white font-medium outline-none border-none placeholder:text-white/30"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="btn btn-primary w-full sm:w-auto px-7 h-11 min-h-[2.75rem] rounded-xl sm:rounded-full font-bold text-white shadow-lg shadow-primary/20 normal-case hover:scale-105 active:scale-95 transition-all"
-                    >
-                        Search
-                    </button>
-                </motion.form> */}
 
                 {/* Action Buttons */}
                 <motion.div variants={fadeInUp} className="flex flex-wrap items-center justify-center gap-4 w-full">
