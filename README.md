@@ -13,7 +13,7 @@
 
 **RecipeHub** is a state-of-the-art full-stack culinary platform built with Next.js App Router. It allows food enthusiasts to discover, create, share, and organize recipes, featuring an **AI Smart Recipe Generator**, **Automated Grocery List with PDF Export**, **Role-Based Access Control**, **Stripe Paywall for Premium Membership**, **OTP-Verified Authentication**, and comprehensive **Admin Analytics**.
 
-[🌐 Live Application](https://recipe-hub-client-two.vercel.app) • [⚙️ Backend Repository](https://github.com/OnikTechHub/RecipeHub-Server) • [💻 Frontend Repository](https://github.com/OnikTechHub/RecipeHub-Client)
+[🌐 Live Application](https://recipe-hub-web-omega.vercel.app/) • [⚙️ Backend Repository](https://github.com/OnikTechHub/RecipeHub-Server) • [💻 Frontend Repository](https://github.com/OnikTechHub/RecipeHub-Client)
 
 </div>
 
