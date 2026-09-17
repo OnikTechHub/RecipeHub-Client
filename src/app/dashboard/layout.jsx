@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import {
   FaChartPie, FaUtensils, FaPlusCircle, FaHeart,
   FaShoppingBag, FaUserCircle, FaUsers, FaFlag,
-  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome, FaUserShield, FaCog, FaMagic, FaShoppingCart, FaStar
+  FaExchangeAlt, FaBars, FaSignOutAlt, FaHome, FaUserShield, FaCog, FaMagic, FaShoppingCart, FaStar, FaKey
 } from "react-icons/fa";
 
 import { HashLoader } from "react-spinners";
@@ -184,6 +184,14 @@ export default function DashboardLayout({ children }) {
                 </Link>
                 <Link href="/dashboard/transactions" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/transactions")}`}>
                   <FaExchangeAlt className="text-lg" /> Transactions
+                </Link>
+                <Link href="/dashboard/api-limits" className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/api-limits")}`}>
+                  <span className="flex items-center gap-3">
+                    <FaKey className={`text-lg ${pathname === "/dashboard/api-limits" ? "text-white" : "text-amber-500"}`} /> API Quota & Limits
+                  </span>
+                  <span className={`badge badge-xs font-black text-[9px] ${pathname === "/dashboard/api-limits" ? "bg-white text-primary border-0" : "badge-warning"}`}>
+                    AI POOL
+                  </span>
                 </Link>
                 <Link href="/dashboard/settings" className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive("/dashboard/settings")}`}>
                   <FaCog className="text-lg" /> Commission & Settings

@@ -21,39 +21,46 @@
 
 ## 🌟 Key Features
 
-### 🤖 1. AI Smart Recipe Generator
-* **AI-Powered Creation**: Generates complete recipes based on custom user prompts, available ingredients, dietary preferences, or meal types using Google Gemini AI integration.
-* **Structured Output**: Automatically formats prep time, cook time, serving count, difficulty, detailed step-by-step instructions, and nutrient breakdown.
-* **One-Click Save & Publish**: Users can preview, edit, and directly save AI-generated recipes to their profile or publish them to the community.
+### 🤖 1. AI Smart Recipe Generator (Pantry-to-Gourmet Engine)
+* **AI-Powered Creation**: Generates complete, gourmet recipes based on custom user prompts, available ingredients, dietary preferences, cuisine types, preparation times, and serving yields powered by Google Gemini AI.
+* **Structured Output**: Automatically formats prep time, cook time, serving count, difficulty ratings, step-by-step instructions, chef secret tips, and detailed nutrient breakdowns.
+* **Weekly Quota & Monetization**: Enforces a 2-recipes/week limit for Premium members with live countdown timer, and paywall protection for free tier users.
+* **One-Click Save & Publish**: Users can preview, edit, price (Free or Premium), and directly save AI-generated recipes to their profile or publish them to the community.
 
-### 📋 2. Smart Grocery List & PDF Export
-* **Instant Grocery Conversion**: Convert any recipe ingredients into an interactive grocery checklist.
+### 💬 2. Chef RecipeHub AI Assistant (Multi-Lingual Caching & Gemini Fallback)
+* **Smart Hybrid Intent Matching**: Intercepts user queries against a pre-loaded 10-item Multilingual FAQ Dataset (Bengali & English), returning instant responses with zero latency and zero API cost.
+* **Multi-Language Detection**: Automatically detects user query language, ensuring 100% Bengali responses for Bengali prompts and English for English prompts.
+* **Gemini 10-Key API Fallback**: Uncached or unique culinary questions fallback seamlessly to the Google Gemini 10-Key Rotation API Engine.
+
+### 🔒 3. Daily AI Rate Limiting & UI Lock
+* **Role-Based Chat Limits**: Free tier users receive 5 AI chatbot queries per day, while Premium members & Admins enjoy unlimited access.
+* **Input Lock & Notice Box**: Automatically locks the chatbot input field and send button when the 5-message limit is reached, rendering a stylish upgrade notice with dynamic pricing fetched live from the database.
+* **Strict Domain Boundary Guard**: Enforces strict culinary boundary rules—politely declining off-topic non-culinary questions (coding, sports, finance, politics) in the user's language.
+
+### 📋 4. Smart Grocery List & PDF Export
+* **Instant Grocery Conversion**: Convert any recipe ingredients into an interactive grocery checklist organized by supermarket aisles (Produce, Dairy, Meat, Pantry, Spices).
 * **Interactive Item Tracking**: Tick off bought items while shopping with instant visual feedback.
 * **Professional PDF Generation**: Export grocery lists to formatted, printable PDF documents using `html2pdf.js`/`jsPDF`.
 
-### 🛡️ 3. Role-Based Access Control (RBAC) & Paywall
+### 🛡️ 5. Role-Based Access Control (RBAC) & Paywall
 * **Multi-Tier User System**:
   * **Free User**: Access to recipe browsing, liking, favoriting, and up to 3 free recipe creations.
-  * **Premium Member**: Unlimited recipe publishing, exclusive ⭐ Premium Badge, priority AI generation, and ad-free experience.
-  * **Admin**: Full control over user accounts, recipe moderation, report resolution, and platform analytics.
+  * **Premium Member**: Unlimited recipe publishing, exclusive ⭐ Premium Badge, priority AI generation, smart grocery list access, and ad-free experience.
+  * **Admin**: Full control over user accounts, recipe moderation, report resolution, API limits, and platform analytics.
 * **Stripe Paywall Integration**: Seamless upgrade flow powered by Stripe Checkout with secure payment processing.
 
-### 🔐 4. Enhanced Authentication & Security
+### 🔐 6. Enhanced Authentication & Security
 * **Better-Auth Framework**: Robust authentication powered by Better Auth.
 * **Email OTP Verification**: Registration requires 6-digit email OTP verification before account activation.
 * **Terms of Service & Privacy Agreement**: Mandatory Terms of Service and Privacy Policy agreement checkbox on the register page before submitting.
 * **Google Social OAuth 2.0**: One-click Google sign-in support.
 * **ImageBB Profile Upload**: Instant high-res avatar uploads via ImageBB API.
 
-### 📊 5. API Quota & Admin Analytics
+### 📊 7. API Quota & Admin Analytics
 * **Admin Control Center**: Monitor total registered users, active premium subscriptions, total recipes created, and pending community flags.
 * **Usage Quotas**: Tracks daily AI generation and recipe post quotas with automated tier enforcement.
 
-### 💬 6. Dynamic Reviews, Ratings & Testimonials
-* **Community Interactions**: Like recipes, add to personal favorites, and submit reports for moderation.
-* **Interactive Testimonials**: Real-time community feedback carousel showcasing culinary experience stories.
-
-### 🎨 7. Modern Responsive UI/UX
+### 🎨 8. Modern Responsive UI/UX
 * **Dark / Light Mode**: Seamless theme toggling powered by DaisyUI and Tailwind CSS.
 * **Smooth Animations**: Interactive micro-animations powered by Framer Motion.
 * **Loading States & Skeleton UI**: Skeleton loaders and spinners for smooth data fetching UX.

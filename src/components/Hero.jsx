@@ -1,12 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { FaFire, FaBowlFood } from "react-icons/fa6";
-import { motion } from "framer-motion";
+import { FaFire, FaBowlFood, FaCirclePlay, FaXmark } from "react-icons/fa6";
+import { motion, AnimatePresence } from "framer-motion";
+import { HashLoader } from "react-spinners";
 import { SERVER_URL } from "@/lib/apiConfig";
 
 export default function Hero() {
     const [totalRecipes, setTotalRecipes] = useState(null);
+    const [isVideoOpen, setIsVideoOpen] = useState(false);
+    const [isVideoLoading, setIsVideoLoading] = useState(true);
 
     useEffect(() => {
         fetch(`${SERVER_URL}/api/public-stats`)
@@ -18,6 +21,23 @@ export default function Hero() {
             })
             .catch((err) => console.warn("Hero stats fetch error:", err.message));
     }, []);
+
+    // Reset video loading state whenever modal opens
+    const handleOpenVideo = () => {
+        setIsVideoLoading(true);
+        setIsVideoOpen(true);
+    };
+
+    // Close modal on Escape key
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") setIsVideoOpen(false);
+        };
+        if (isVideoOpen) {
+            window.addEventListener("keydown", handleKeyDown);
+        }
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isVideoOpen]);
 
     const fadeInUp = {
         hidden: { opacity: 0, y: 30 },
@@ -90,6 +110,15 @@ export default function Hero() {
                         <FaBowlFood className="w-4 h-4" />
                         <span>Explore Recipes</span>
                     </Link>
+
+                    <button
+                        onClick={handleOpenVideo}
+                        className="btn bg-white/10 backdrop-blur-md border border-white/20 px-6 h-12 min-h-[3rem] rounded-xl font-bold text-white hover:bg-white/20 hover:border-white/40 hover:scale-105 active:scale-95 transition-all normal-case flex items-center gap-2.5 shadow-lg group"
+                    >
+                        <FaCirclePlay className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
+                        <span>Watch Demo</span>
+                    </button>
+
                     <Link
                         href="/register"
                         className="btn btn-outline px-7 h-12 min-h-[3rem] rounded-xl font-bold border-white/20 text-white hover:bg-white hover:text-black hover:border-white hover:scale-105 active:scale-95 transition-all normal-case backdrop-blur-sm"
@@ -99,6 +128,77 @@ export default function Hero() {
                 </motion.div>
 
             </motion.div>
+
+            {/* Glassmorphic Video Modal */}
+            <AnimatePresence>
+                {isVideoOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsVideoOpen(false)}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-black/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative w-full max-w-4xl bg-zinc-900/90 border border-white/15 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl space-y-3 p-3 sm:p-4"
+                        >
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between px-3 py-1 border-b border-white/10 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span className="text-xs font-bold text-zinc-300 ml-2">
+                                        RecipeHub Video Walkthrough Demo
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setIsVideoOpen(false)}
+                                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-all cursor-pointer"
+                                >
+                                    <FaXmark className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Responsive Aspect-Video Container */}
+                            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner">
+                                {/* React Inbuilt HashLoader Spinner Overlay */}
+                                {isVideoLoading && (
+                                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 gap-4">
+                                        <HashLoader color="#10b981" size={50} />
+                                        <span className="text-xs font-bold text-zinc-300 tracking-wider uppercase animate-pulse">
+                                            Loading Demo Video...
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Transparent Overlay Blocker to prevent clicking Google Drive pop-out/share icon */}
+                                <div
+                                    className="absolute top-0 right-0 w-28 h-16 z-20 bg-transparent cursor-default"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                />
+
+                                <iframe
+                                    src="https://drive.google.com/file/d/1NxNWrWK6BsXF6Io5PBZ8tSOb0oKl445D/preview"
+                                    title="RecipeHub Demo Video"
+                                    onLoad={() => setIsVideoLoading(false)}
+                                    className="w-full h-full border-0"
+                                    allow="autoplay; encrypted-media; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
