@@ -1,4 +1,4 @@
-<img width="1919" height="1046" alt="image" src="https://github.com/user-attachments/assets/2df05f78-cdd5-4a4e-b76d-7606004c72bd" /># 🍲 RecipeHub - Client Application
+# 🍲 RecipeHub - Client Application
 
 <div align="center">
 
