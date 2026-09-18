@@ -1,4 +1,4 @@
-# 🍲 RecipeHub - Client Application
+<img width="1919" height="1046" alt="image" src="https://github.com/user-attachments/assets/2df05f78-cdd5-4a4e-b76d-7606004c72bd" /># 🍲 RecipeHub - Client Application
 
 <div align="center">
 
@@ -11,7 +11,9 @@
 [![Stripe](https://img.shields.io/badge/Stripe-Payment_Integration-6772E5?style=for-the-badge&logo=stripe)](https://stripe.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-**RecipeHub** is a state-of-the-art full-stack culinary platform built with Next.js App Router. It allows food enthusiasts to discover, create, share, and organize recipes, featuring an **AI Smart Recipe Generator**, **Automated Grocery List with PDF Export**, **Role-Based Access Control**, **Stripe Paywall for Premium Membership**, **OTP-Verified Authentication**, and comprehensive **Admin Analytics**.
+**RecipeHub** is an advanced culinary ecosystem designed to bridge the gap between food enthusiasts, home cooks, and professional chefs. The platform offers secure user authentication, seamless subscription monetization, and an interactive admin dashboard.
+
+What sets it apart is its cutting-edge AI architecture—featuring an intelligent Smart Recipe Generator and a Smart Hybrid AI Assistant equipped with multi-lingual semantic caching, dynamic API fallback, automated daily rate-limiting with UI locks, and strict culinary domain boundaries. It delivers a lightning-fast, intelligent, and highly secure interactive digital kitchen experience.
 
 [🌐 Live Application](https://recipe-hub-web-omega.vercel.app/) • [⚙️ Backend Repository](https://github.com/OnikTechHub/RecipeHub-Server) • [💻 Frontend Repository](https://github.com/OnikTechHub/RecipeHub-Client)
 
